@@ -4,6 +4,22 @@
             box-sizing: border-box;
         }
 
+        .w-full{
+            width: 100%;
+        }
+
+        .w-40{
+            width: 40%;
+        }
+
+        .flex{
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 20px;
+            padding: 20px;
+        }
+
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);

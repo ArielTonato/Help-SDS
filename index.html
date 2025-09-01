@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="styles.css">
     <title>Conversor de Texto a Binario y Diccionario de Caracteres</title>
 </head>
+
 <body>
     <div class="container">
         <div class="header">
@@ -29,8 +31,11 @@
                         <input type="checkbox" id="showSpace" checked>
                         <label for="showSpace">Mostrar espacio</label>
                     </div>
-                    <div class="special-chars-container">
-                        <label>Caracteres especiales (click para seleccionar, doble click para deseleccionar):</label>
+                </div>
+                <div class="w-full flex">
+                    <div class="special-chars-container w-40">
+                        <label>Caracteres especiales (click para seleccionar, doble click para
+                            deseleccionar):</label>
                         <div class="special-chars-grid" id="specialCharsGrid">
                             <div class="special-char-group">
                                 <span class="group-title">Símbolos comunes:</span>
@@ -58,7 +63,8 @@
                                     <span class="special-char" data-char=":">:</span>
                                     <span class="special-char" data-char=",">,</span>
                                     <span class="special-char" data-char=".">.</span>
-                                    <span class="special-char" data-char="<"><</span>
+                                    <span class="special-char" data-char="<">
+                                    </span>
                                     <span class="special-char" data-char=">">></span>
                                     <span class="special-char" data-char="?">?</span>
                                 </div>
@@ -159,4 +165,5 @@
     </div>
     <script src="index.js"></script>
 </body>
+
 </html>

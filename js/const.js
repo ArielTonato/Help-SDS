@@ -21,7 +21,11 @@ const CONFIG = {
     MESSAGES: {
         BINARY_PLACEHOLDER: 'El binario aparecerá aquí...',
         HEX_PLACEHOLDER: 'El hexadecimal aparecerá aquí...',
+        OCTAL_PLACEHOLDER: 'El octal aparecerá aquí...',
+        MODULO_PLACEHOLDER: 'El resultado aparecerá aquí...',
         DECIMAL_ERROR: 'Error: Ingresa un valor entre 0-255 o A-FF',
+        OCTAL_ERROR: 'Error: Ingresa un número decimal válido entre 0-255',
+        MODULO_ERROR: 'Error: Ingresa números válidos (el divisor no puede ser 0)',
         FORMAT_ERROR: 'Error: Formato inválido',
         NO_CHARS: 'No hay caracteres seleccionados'
     }

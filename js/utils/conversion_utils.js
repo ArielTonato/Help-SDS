@@ -36,6 +36,40 @@ class ConversionUtils {
             return CONFIG.MESSAGES.FORMAT_ERROR;
         }
     }
+
+    static decimalToOctal(input) {
+        if (!input) return CONFIG.MESSAGES.OCTAL_PLACEHOLDER;
+
+        try {
+            const decimalValue = parseInt(input.trim(), 10);
+
+            if (isNaN(decimalValue) || decimalValue < CONFIG.DECIMAL.MIN || decimalValue > CONFIG.DECIMAL.MAX) {
+                return CONFIG.MESSAGES.OCTAL_ERROR;
+            }
+
+            return decimalValue.toString(8);
+        } catch (error) {
+            return CONFIG.MESSAGES.FORMAT_ERROR;
+        }
+    }
+
+    static calculateModulo(dividend, divisor) {
+        if (!dividend || !divisor) return CONFIG.MESSAGES.MODULO_PLACEHOLDER;
+
+        try {
+            const x = parseFloat(dividend.trim());
+            const y = parseFloat(divisor.trim());
+
+            if (isNaN(x) || isNaN(y) || y === 0) {
+                return CONFIG.MESSAGES.MODULO_ERROR;
+            }
+
+            const result = x % y;
+            return result.toString();
+        } catch (error) {
+            return CONFIG.MESSAGES.FORMAT_ERROR;
+        }
+    }
 }
 
 export { ConversionUtils };

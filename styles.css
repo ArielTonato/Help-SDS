@@ -339,7 +339,7 @@
             gap: 8px;
         }
 
-        .binary-controls, .hex-controls, .decimal-binary-controls {
+        .binary-controls, .hex-controls, .decimal-binary-controls, .decimal-octal-controls, .modulo-controls {
             display: flex;
             justify-content: flex-end;
             margin-bottom: 10px;
@@ -641,4 +641,78 @@
             0% { transform: scale(1); }
             50% { transform: scale(1.1); }
             100% { transform: scale(1); }
+        }
+
+        /* Estilos para la sección de conversión a octal */
+        .octal-output {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: #ffa500;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            min-height: 120px;
+            word-break: break-all;
+            line-height: 1.6;
+            border: 1px solid rgba(255, 165, 0, 0.2);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3),
+                        0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .octal-output::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #ffa500, #ffb347, #ffa500);
+            background-size: 200% 100%;
+            animation: scanline 2s linear infinite;
+        }
+
+        .octal-output:hover {
+            transform: translateY(-1px);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3),
+                        0 6px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Estilos para la sección de módulo */
+        .modulo-output {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: #9b59b6;
+            padding: 20px;
+            border-radius: 12px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            min-height: 120px;
+            word-break: break-all;
+            line-height: 1.6;
+            border: 1px solid rgba(155, 89, 182, 0.2);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3),
+                        0 4px 15px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .modulo-output::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, #9b59b6, #bb6bd9, #9b59b6);
+            background-size: 200% 100%;
+            animation: scanline 2s linear infinite;
+        }
+
+        .modulo-output:hover {
+            transform: translateY(-1px);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.3),
+                        0 6px 20px rgba(0, 0, 0, 0.15);
         }

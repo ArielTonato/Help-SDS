@@ -7,7 +7,9 @@ class FontSizeController {
             dictionary: CONFIG.FONT_SIZE.DEFAULT,
             binary: CONFIG.FONT_SIZE.DEFAULT,
             hex: CONFIG.FONT_SIZE.DEFAULT,
-            decimalBinary: CONFIG.FONT_SIZE.DEFAULT
+            decimalBinary: CONFIG.FONT_SIZE.DEFAULT,
+            decimalOctal: CONFIG.FONT_SIZE.DEFAULT,
+            modulo: CONFIG.FONT_SIZE.DEFAULT
         };
     }
 
@@ -16,6 +18,8 @@ class FontSizeController {
         this.setupFontControls('Binary', 'binary', () => [DOMUtils.getElementById('binaryOutput')]);
         this.setupFontControls('Hex', 'hex', () => [DOMUtils.getElementById('hexOutput')]);
         this.setupFontControls('DecimalBinary', 'decimalBinary', () => [DOMUtils.getElementById('decimalBinaryOutput')]);
+        this.setupFontControls('DecimalOctal', 'decimalOctal', () => [DOMUtils.getElementById('decimalOctalOutput')]);
+        this.setupFontControls('Modulo', 'modulo', () => [DOMUtils.getElementById('moduloOutput')]);
     }
 
     setupFontControls(suffix, property, getElements) {

@@ -159,6 +159,15 @@ class TextToBinaryConverter {
         this.decimalInput = DOMUtils.getElementById('decimalInput');
         this.decimalBinaryOutput = DOMUtils.getElementById('decimalBinaryOutput');
         
+        // Nuevos elementos para octal
+        this.decimalOctalInput = DOMUtils.getElementById('decimalOctalInput');
+        this.decimalOctalOutput = DOMUtils.getElementById('decimalOctalOutput');
+        
+        // Nuevos elementos para módulo
+        this.dividendInput = DOMUtils.getElementById('dividendInput');
+        this.divisorInput = DOMUtils.getElementById('divisorInput');
+        this.moduloOutput = DOMUtils.getElementById('moduloOutput');
+        
         // Elementos del diccionario
         this.dictionary = DOMUtils.getElementById('dictionary');
         this.showLowercase = DOMUtils.getElementById('showLowercase');
@@ -172,6 +181,11 @@ class TextToBinaryConverter {
         this.textInput?.addEventListener('input', () => this.convertToBinary());
         this.textInputHex?.addEventListener('input', () => this.convertToHex());
         this.decimalInput?.addEventListener('input', () => this.convertDecimalToBinary());
+        
+        // Nuevas conversiones
+        this.decimalOctalInput?.addEventListener('input', () => this.convertDecimalToOctal());
+        this.dividendInput?.addEventListener('input', () => this.calculateModulo());
+        this.divisorInput?.addEventListener('input', () => this.calculateModulo());
 
         // Controles del diccionario
         this.showLowercase?.addEventListener('change', () => this.updateDictionary());
@@ -201,7 +215,16 @@ class TextToBinaryConverter {
             { buttonId: 'copyTextInputHex', getValue: () => this.textInputHex?.value },
             { buttonId: 'copyHexOutput', getValue: () => this.getOutputText(this.hexOutput, CONFIG.MESSAGES.HEX_PLACEHOLDER) },
             { buttonId: 'copyDecimalInput', getValue: () => this.decimalInput?.value },
-            { buttonId: 'copyDecimalBinaryOutput', getValue: () => this.getOutputText(this.decimalBinaryOutput, CONFIG.MESSAGES.BINARY_PLACEHOLDER) }
+            { buttonId: 'copyDecimalBinaryOutput', getValue: () => this.getOutputText(this.decimalBinaryOutput, CONFIG.MESSAGES.BINARY_PLACEHOLDER) },
+            
+            // Nuevos botones de copia para octal
+            { buttonId: 'copyDecimalOctalInput', getValue: () => this.decimalOctalInput?.value },
+            { buttonId: 'copyDecimalOctalOutput', getValue: () => this.getOutputText(this.decimalOctalOutput, CONFIG.MESSAGES.OCTAL_PLACEHOLDER) },
+            
+            // Nuevos botones de copia para módulo
+            { buttonId: 'copyDividendInput', getValue: () => this.dividendInput?.value },
+            { buttonId: 'copyDivisorInput', getValue: () => this.divisorInput?.value },
+            { buttonId: 'copyModuloOutput', getValue: () => this.getOutputText(this.moduloOutput, CONFIG.MESSAGES.MODULO_PLACEHOLDER) }
         ];
 
         copyButtons.forEach(({ buttonId, getValue }) => {
@@ -235,6 +258,21 @@ class TextToBinaryConverter {
     convertDecimalToBinary() {
         if (this.decimalBinaryOutput) {
             this.decimalBinaryOutput.textContent = ConversionUtils.decimalToBinary(this.decimalInput?.value || '');
+        }
+    }
+
+    convertDecimalToOctal() {
+        if (this.decimalOctalOutput) {
+            this.decimalOctalOutput.textContent = ConversionUtils.decimalToOctal(this.decimalOctalInput?.value || '');
+        }
+    }
+
+    calculateModulo() {
+        if (this.moduloOutput) {
+            this.moduloOutput.textContent = ConversionUtils.calculateModulo(
+                this.dividendInput?.value || '',
+                this.divisorInput?.value || ''
+            );
         }
     }
 

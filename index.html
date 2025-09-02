@@ -191,6 +191,57 @@
                     <div id="decimalBinaryOutput" class="binary-output">El binario aparecerá aquí...</div>
                 </div>
             </div>
+
+            <div class="section">
+                <h2>🔢 Conversión de Decimal a Octal</h2>
+                <div class="input-group">
+                    <label for="decimalOctalInput">Ingresa número decimal (0-255):</label>
+                    <div class="input-with-copy">
+                        <input type="text" id="decimalOctalInput" class="text-input" placeholder="Ej: 64, 128, 255...">
+                        <button type="button" id="copyDecimalOctalInput" class="copy-btn" title="Copiar entrada">📋</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Resultado en octal:</label>
+                    <div class="decimal-octal-controls">
+                        <div class="button-group">
+                            <button type="button" id="decreaseDecimalOctalFont" class="size-btn">A-</button>
+                            <button type="button" id="increaseDecimalOctalFont" class="size-btn">A+</button>
+                            <button type="button" id="copyDecimalOctalOutput" class="copy-btn" title="Copiar octal">📋</button>
+                        </div>
+                    </div>
+                    <div id="decimalOctalOutput" class="octal-output">El octal aparecerá aquí...</div>
+                </div>
+            </div>
+
+            <div class="section">
+                <h2>➗ Calculadora de Módulo</h2>
+                <div class="input-group">
+                    <label for="dividendInput">Dividendo (x):</label>
+                    <div class="input-with-copy">
+                        <input type="text" id="dividendInput" class="text-input" placeholder="Ingresa el dividendo...">
+                        <button type="button" id="copyDividendInput" class="copy-btn" title="Copiar dividendo">📋</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label for="divisorInput">Divisor (y):</label>
+                    <div class="input-with-copy">
+                        <input type="text" id="divisorInput" class="text-input" placeholder="Ingresa el divisor...">
+                        <button type="button" id="copyDivisorInput" class="copy-btn" title="Copiar divisor">📋</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Resultado (x mod y = r):</label>
+                    <div class="modulo-controls">
+                        <div class="button-group">
+                            <button type="button" id="decreaseModuloFont" class="size-btn">A-</button>
+                            <button type="button" id="increaseModuloFont" class="size-btn">A+</button>
+                            <button type="button" id="copyModuloOutput" class="copy-btn" title="Copiar resultado">📋</button>
+                        </div>
+                    </div>
+                    <div id="moduloOutput" class="modulo-output">El resultado aparecerá aquí...</div>
+                </div>
+            </div>
         </div>
     </div>
     <script src="js/index.js" type="module"></script>

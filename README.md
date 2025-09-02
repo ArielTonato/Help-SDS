@@ -26,6 +26,21 @@ Una aplicación web interactiva que permite convertir texto a formato binario y 
 - Formato: valores en mayúsculas separados por espacios
 - Ejemplo: "Hola" → "48 6F 6C 61"
 
+#### Decimal a Binario
+- Conversión de números decimales (0-255) o letras hexadecimales (A-F) a binario
+- Formato: resultado en 8 bits
+- Ejemplo: "255" → "11111111", "A" → "00001010"
+
+#### Decimal a Octal
+- Conversión de números decimales (0-255) a formato octal
+- Formato: representación en base 8
+- Ejemplo: "64" → "100", "255" → "377"
+
+#### Calculadora de Módulo
+- Operación módulo entre dos números enteros
+- Formato: x mod y = resultado
+- Ejemplo: "17 mod 5" → "2"
+
 ### 🎨 Interfaz de Usuario
 
 #### Controles de Tamaño de Fuente
@@ -35,6 +50,14 @@ Una aplicación web interactiva que permite convertir texto a formato binario y 
   - Diccionario de caracteres
   - Salida binaria
   - Salida hexadecimal
+  - Salida decimal a binario
+  - Salida decimal a octal
+  - Resultado de módulo
+
+#### Funcionalidad de Copiado
+- Botones de copia (📋) para todas las entradas y salidas
+- Copia instantánea al portapapeles
+- Feedback visual al copiar
 
 #### Selección de Caracteres Especiales
 - **Click simple**: Seleccionar carácter
@@ -96,10 +119,13 @@ Simplemente abre el archivo `index.html` en tu navegador web.
 3. Selecciona caracteres especiales haciendo click en ellos
 4. Para deseleccionar, haz doble click
 
-### 2. Convertir Texto
-1. **Para binario**: Escribe en el primer campo de texto
-2. **Para hexadecimal**: Escribe en el segundo campo de texto
-3. Los resultados aparecen instantáneamente
+### 2. Convertir Texto y Números
+1. **Texto a binario**: Escribe en el primer campo de texto
+2. **Texto a hexadecimal**: Escribe en el segundo campo de texto
+3. **Decimal a binario**: Ingresa números (0-255) o letras hex (A-F)
+4. **Decimal a octal**: Ingresa números decimales (0-255)
+5. **Módulo**: Ingresa dividendo y divisor para calcular el resto
+6. Los resultados aparecen instantáneamente
 
 ### 3. Ajustar Visualización
 - Usa los botones **A+** y **A-** para cambiar el tamaño de fuente
@@ -116,21 +142,34 @@ Simplemente abre el archivo `index.html` en tu navegador web.
 
 ```
 Seguridad Web/
-├── index.html          # Archivo principal
-├── index.js            # Lógica de JavaScript
-├── README.md          # Este archivo
-└── styles.css          # Estilos CSS
+├── README.md                           # Este archivo
+├── index.html                          # Archivo principal HTML
+├── styles.css                          # Estilos CSS
+└── js/
+    ├── const.js                        # Constantes del proyecto
+    ├── index.js                        # Lógica principal
+    ├── controllers/
+    │   └── fontsize_controller.js      # Control de tamaños de fuente
+    └── utils/
+        ├── clipboard_utils.js          # Utilidades de portapapeles
+        ├── conversion_utils.js         # Funciones de conversión
+        └── dom_utils.js               # Utilidades del DOM
 ```
 
 ## 🤝 Contribuciones
 
 Este proyecto está abierto a mejoras. Algunas ideas para futuras características:
 
-- [ ] Conversión a octal
+- [X] Conversión decimal a binario
+- [X] Conversión decimal a octal
+- [X] Calculadora de módulo
+- [X] Funcionalidad de copiado completa
+- [X] Controles de tamaño de fuente para todas las secciones
 - [ ] Exportar resultados a archivo
 - [ ] Modo oscuro
 - [ ] Historial de conversiones
 - [ ] Más conjuntos de caracteres especiales
+- [ ] Conversión a otras bases numéricas
 
 ## 📄 Licencia
 
@@ -142,4 +181,4 @@ Si encuentras algún problema o tienes sugerencias, por favor reporta los issues
 
 ---
 
-**Desarrollado con ❤️ para facilitar el aprendizaje de conversiones de texto**
+**Desarrollado con ❤️ para facilitar el desarrollo de tareas de la materia de Seguridad en el desarrollo de software**

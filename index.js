@@ -1,4 +1,4 @@
-        class TextToBinaryConverter {
+class TextToBinaryConverter {
             constructor() {
                 this.textInput = document.getElementById('textInput');
                 this.binaryOutput = document.getElementById('binaryOutput');
@@ -34,6 +34,9 @@
 
                 // Controles de tamaño de fuente
                 this.initializeFontSizeControls();
+                
+                // Botones de copiar
+                this.initializeCopyButtons();
             }
 
             initializeSpecialCharsEvents() {
@@ -125,6 +128,73 @@
 
             updateHexFontSize(size) {
                 this.hexOutput.style.fontSize = size + 'px';
+            }
+
+            initializeCopyButtons() {
+                // Botón para copiar texto de entrada binario
+                const copyTextInputBtn = document.getElementById('copyTextInput');
+                copyTextInputBtn.addEventListener('click', () => {
+                    this.copyToClipboard(this.textInput.value, copyTextInputBtn);
+                });
+
+                // Botón para copiar resultado binario
+                const copyBinaryOutputBtn = document.getElementById('copyBinaryOutput');
+                copyBinaryOutputBtn.addEventListener('click', () => {
+                    const binaryText = this.binaryOutput.textContent;
+                    if (binaryText && binaryText !== 'El binario aparecerá aquí...') {
+                        this.copyToClipboard(binaryText, copyBinaryOutputBtn);
+                    }
+                });
+
+                // Botón para copiar texto de entrada hexadecimal
+                const copyTextInputHexBtn = document.getElementById('copyTextInputHex');
+                copyTextInputHexBtn.addEventListener('click', () => {
+                    this.copyToClipboard(this.textInputHex.value, copyTextInputHexBtn);
+                });
+
+                // Botón para copiar resultado hexadecimal
+                const copyHexOutputBtn = document.getElementById('copyHexOutput');
+                copyHexOutputBtn.addEventListener('click', () => {
+                    const hexText = this.hexOutput.textContent;
+                    if (hexText && hexText !== 'El hexadecimal aparecerá aquí...') {
+                        this.copyToClipboard(hexText, copyHexOutputBtn);
+                    }
+                });
+            }
+
+            async copyToClipboard(text, button) {
+                try {
+                    await navigator.clipboard.writeText(text);
+                    
+                    // Cambiar el estilo del botón temporalmente
+                    button.classList.add('copied');
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '✓';
+                    
+                    setTimeout(() => {
+                        button.classList.remove('copied');
+                        button.innerHTML = originalText;
+                    }, 1000);
+                    
+                } catch (err) {
+                    // Fallback para navegadores que no soportan clipboard API
+                    const textArea = document.createElement('textarea');
+                    textArea.value = text;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textArea);
+                    
+                    // Cambiar el estilo del botón temporalmente
+                    button.classList.add('copied');
+                    const originalText = button.innerHTML;
+                    button.innerHTML = '✓';
+                    
+                    setTimeout(() => {
+                        button.classList.remove('copied');
+                        button.innerHTML = originalText;
+                    }, 1000);
+                }
             }
 
             convertToBinary() {

@@ -130,7 +130,10 @@
                 <h2>📝 Conversión de Texto a Binario</h2>
                 <div class="input-group">
                     <label for="textInput">Ingresa tu texto:</label>
-                    <input type="text" id="textInput" class="text-input" placeholder="Escribe aquí...">
+                    <div class="input-with-copy">
+                        <input type="text" id="textInput" class="text-input" placeholder="Escribe aquí...">
+                        <button type="button" id="copyTextInput" class="copy-btn" title="Copiar texto">📋</button>
+                    </div>
                 </div>
                 <div class="input-group">
                     <label>Resultado en binario:</label>
@@ -138,6 +141,7 @@
                         <div class="button-group">
                             <button type="button" id="decreaseBinaryFont" class="size-btn">A-</button>
                             <button type="button" id="increaseBinaryFont" class="size-btn">A+</button>
+                            <button type="button" id="copyBinaryOutput" class="copy-btn" title="Copiar binario">📋</button>
                         </div>
                     </div>
                     <div id="binaryOutput" class="binary-output">El binario aparecerá aquí...</div>
@@ -148,7 +152,10 @@
                 <h2>🔢 Conversión de Texto a Hexadecimal</h2>
                 <div class="input-group">
                     <label for="textInputHex">Ingresa tu texto:</label>
-                    <input type="text" id="textInputHex" class="text-input" placeholder="Escribe aquí...">
+                    <div class="input-with-copy">
+                        <input type="text" id="textInputHex" class="text-input" placeholder="Escribe aquí...">
+                        <button type="button" id="copyTextInputHex" class="copy-btn" title="Copiar texto">📋</button>
+                    </div>
                 </div>
                 <div class="input-group">
                     <label>Resultado en hexadecimal:</label>
@@ -156,6 +163,7 @@
                         <div class="button-group">
                             <button type="button" id="decreaseHexFont" class="size-btn">A-</button>
                             <button type="button" id="increaseHexFont" class="size-btn">A+</button>
+                            <button type="button" id="copyHexOutput" class="copy-btn" title="Copiar hexadecimal">📋</button>
                         </div>
                     </div>
                     <div id="hexOutput" class="hex-output">El hexadecimal aparecerá aquí...</div>

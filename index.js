@@ -4,6 +4,8 @@ class TextToBinaryConverter {
                 this.binaryOutput = document.getElementById('binaryOutput');
                 this.textInputHex = document.getElementById('textInputHex');
                 this.hexOutput = document.getElementById('hexOutput');
+                this.decimalInput = document.getElementById('decimalInput');
+                this.decimalBinaryOutput = document.getElementById('decimalBinaryOutput');
                 this.dictionary = document.getElementById('dictionary');
                 this.showLowercase = document.getElementById('showLowercase');
                 this.showNumbers = document.getElementById('showNumbers');
@@ -24,6 +26,11 @@ class TextToBinaryConverter {
                 // Conversión en tiempo real - Hexadecimal
                 this.textInputHex.addEventListener('input', () => {
                     this.convertToHex();
+                });
+
+                // Conversión en tiempo real - Decimal a Binario
+                this.decimalInput.addEventListener('input', () => {
+                    this.convertDecimalToBinary();
                 });
 
                 // Actualizar diccionario cuando cambien los controles
@@ -76,10 +83,13 @@ class TextToBinaryConverter {
                 const decreaseBinaryBtn = document.getElementById('decreaseBinaryFont');
                 const increaseHexBtn = document.getElementById('increaseHexFont');
                 const decreaseHexBtn = document.getElementById('decreaseHexFont');
+                const increaseDecimalBinaryBtn = document.getElementById('increaseDecimalBinaryFont');
+                const decreaseDecimalBinaryBtn = document.getElementById('decreaseDecimalBinaryFont');
 
                 let dictFontSize = 14; // Tamaño inicial del diccionario
                 let binaryFontSize = 14; // Tamaño inicial del binario
                 let hexFontSize = 14; // Tamaño inicial del hexadecimal
+                let decimalBinaryFontSize = 14; // Tamaño inicial del decimal a binario
 
                 // Controles del diccionario
                 increaseDictBtn.addEventListener('click', () => {
@@ -113,6 +123,17 @@ class TextToBinaryConverter {
                     hexFontSize = Math.max(hexFontSize - 2, 10);
                     this.updateHexFontSize(hexFontSize);
                 });
+
+                // Controles del decimal a binario
+                increaseDecimalBinaryBtn.addEventListener('click', () => {
+                    decimalBinaryFontSize = Math.min(decimalBinaryFontSize + 2, 24);
+                    this.updateDecimalBinaryFontSize(decimalBinaryFontSize);
+                });
+
+                decreaseDecimalBinaryBtn.addEventListener('click', () => {
+                    decimalBinaryFontSize = Math.max(decimalBinaryFontSize - 2, 10);
+                    this.updateDecimalBinaryFontSize(decimalBinaryFontSize);
+                });
             }
 
             updateDictionaryFontSize(size) {
@@ -128,6 +149,10 @@ class TextToBinaryConverter {
 
             updateHexFontSize(size) {
                 this.hexOutput.style.fontSize = size + 'px';
+            }
+
+            updateDecimalBinaryFontSize(size) {
+                this.decimalBinaryOutput.style.fontSize = size + 'px';
             }
 
             initializeCopyButtons() {
@@ -158,6 +183,21 @@ class TextToBinaryConverter {
                     const hexText = this.hexOutput.textContent;
                     if (hexText && hexText !== 'El hexadecimal aparecerá aquí...') {
                         this.copyToClipboard(hexText, copyHexOutputBtn);
+                    }
+                });
+
+                // Botón para copiar entrada decimal
+                const copyDecimalInputBtn = document.getElementById('copyDecimalInput');
+                copyDecimalInputBtn.addEventListener('click', () => {
+                    this.copyToClipboard(this.decimalInput.value, copyDecimalInputBtn);
+                });
+
+                // Botón para copiar resultado decimal a binario
+                const copyDecimalBinaryOutputBtn = document.getElementById('copyDecimalBinaryOutput');
+                copyDecimalBinaryOutputBtn.addEventListener('click', () => {
+                    const decimalBinaryText = this.decimalBinaryOutput.textContent;
+                    if (decimalBinaryText && decimalBinaryText !== 'El binario aparecerá aquí...') {
+                        this.copyToClipboard(decimalBinaryText, copyDecimalBinaryOutputBtn);
                     }
                 });
             }
@@ -225,6 +265,42 @@ class TextToBinaryConverter {
                 }).join(' ');
 
                 this.hexOutput.textContent = hexResult;
+            }
+
+            convertDecimalToBinary() {
+                const input = this.decimalInput.value.trim().toUpperCase();
+                if (!input) {
+                    this.decimalBinaryOutput.textContent = 'El binario aparecerá aquí...';
+                    return;
+                }
+
+                try {
+                    let decimalValue;
+                    
+                    // Verificar si es un número hexadecimal (contiene A-F)
+                    if (/[A-F]/.test(input)) {
+                        // Es hexadecimal
+                        decimalValue = parseInt(input, 16);
+                    } else {
+                        // Es decimal
+                        decimalValue = parseInt(input, 10);
+                    }
+
+                    // Validar rango (0-255 para 8 bits)
+                    if (isNaN(decimalValue) || decimalValue < 0 || decimalValue > 255) {
+                        this.decimalBinaryOutput.textContent = 'Error: Ingresa un valor entre 0-255 o A-FF';
+                        return;
+                    }
+
+                    // Convertir a binario de 8 bits con espacios cada 4 bits
+                    const binaryString = decimalValue.toString(2).padStart(8, '0');
+                    const formattedBinary = binaryString.substring(0, 4) + ' ' + binaryString.substring(4);
+                    
+                    this.decimalBinaryOutput.textContent = formattedBinary;
+                    
+                } catch (error) {
+                    this.decimalBinaryOutput.textContent = 'Error: Formato inválido';
+                }
             }
 
             generateCharacterDictionary() {

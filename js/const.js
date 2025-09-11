@@ -10,6 +10,9 @@ const CONFIG = {
         MIN: 0,
         MAX: 255
     },
+    FRACTIONAL_DECIMAL: {
+        MAX_PRECISION: 19
+    },
     ASCII: {
         UPPERCASE_START: 65,
         UPPERCASE_END: 90,
@@ -23,9 +26,11 @@ const CONFIG = {
         HEX_PLACEHOLDER: 'El hexadecimal aparecerá aquí...',
         OCTAL_PLACEHOLDER: 'El octal aparecerá aquí...',
         MODULO_PLACEHOLDER: 'El resultado aparecerá aquí...',
+        FRACTIONAL_DECIMAL_BINARY_PLACEHOLDER: 'El binario aparecerá aquí...',
         DECIMAL_ERROR: 'Error: Ingresa un valor entre 0-255 o A-FF',
         OCTAL_ERROR: 'Error: Ingresa un número decimal válido entre 0-255',
         MODULO_ERROR: 'Error: Ingresa números válidos (el divisor no puede ser 0)',
+        FRACTIONAL_DECIMAL_ERROR: 'Error: Ingresa un número decimal válido',
         FORMAT_ERROR: 'Error: Formato inválido',
         NO_CHARS: 'No hay caracteres seleccionados'
     }

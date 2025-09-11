@@ -70,6 +70,70 @@ class ConversionUtils {
             return CONFIG.MESSAGES.FORMAT_ERROR;
         }
     }
+
+    static fractionalDecimalToBinary(input) {
+        if (!input) return CONFIG.MESSAGES.FRACTIONAL_DECIMAL_BINARY_PLACEHOLDER;
+
+        try {
+            const decimal = parseFloat(input.trim());
+
+            if (isNaN(decimal)) {
+                return CONFIG.MESSAGES.FRACTIONAL_DECIMAL_ERROR;
+            }
+
+            // Separar parte entera y fraccionaria
+            const integerPart = Math.floor(Math.abs(decimal));
+            const fractionalPart = Math.abs(decimal) - integerPart;
+            const isNegative = decimal < 0;
+
+            // Convertir parte entera
+            let binaryInteger = '';
+            if (integerPart === 0) {
+                binaryInteger = '0';
+            } else {
+                let tempInteger = integerPart;
+                while (tempInteger > 0) {
+                    binaryInteger = (tempInteger % 2) + binaryInteger;
+                    tempInteger = Math.floor(tempInteger / 2);
+                }
+            }
+
+            // Convertir parte fraccionaria
+            let binaryFractional = '';
+            let tempFractional = fractionalPart;
+            let iteration = 0;
+            const maxPrecision = CONFIG.FRACTIONAL_DECIMAL.MAX_PRECISION;
+
+            while (tempFractional > 0 && iteration < maxPrecision) {
+                tempFractional *= 2;
+                iteration++;
+
+                if (tempFractional >= 1) {
+                    binaryFractional += '1';
+                    tempFractional -= 1;
+                } else {
+                    binaryFractional += '0';
+                }
+
+                // Prevenir bucles infinitos con números muy pequeños
+                if (tempFractional < 1e-15) break;
+            }
+
+            // Construir resultado final
+            let result = binaryInteger;
+            if (binaryFractional) {
+                result += '.' + binaryFractional;
+            }
+
+            if (isNegative) {
+                result = '-' + result;
+            }
+
+            return result;
+        } catch (error) {
+            return CONFIG.MESSAGES.FORMAT_ERROR;
+        }
+    }
 }
 
 export { ConversionUtils };

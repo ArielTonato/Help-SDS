@@ -168,6 +168,10 @@ class TextToBinaryConverter {
         this.divisorInput = DOMUtils.getElementById('divisorInput');
         this.moduloOutput = DOMUtils.getElementById('moduloOutput');
         
+        // Nuevos elementos para decimal fraccionario a binario
+        this.fractionalDecimalInput = DOMUtils.getElementById('fractionalDecimalInput');
+        this.fractionalDecimalBinaryOutput = DOMUtils.getElementById('fractionalDecimalBinaryOutput');
+        
         // Elementos del diccionario
         this.dictionary = DOMUtils.getElementById('dictionary');
         this.showLowercase = DOMUtils.getElementById('showLowercase');
@@ -186,6 +190,7 @@ class TextToBinaryConverter {
         this.decimalOctalInput?.addEventListener('input', () => this.convertDecimalToOctal());
         this.dividendInput?.addEventListener('input', () => this.calculateModulo());
         this.divisorInput?.addEventListener('input', () => this.calculateModulo());
+        this.fractionalDecimalInput?.addEventListener('input', () => this.convertFractionalDecimalToBinary());
 
         // Controles del diccionario
         this.showLowercase?.addEventListener('change', () => this.updateDictionary());
@@ -224,7 +229,11 @@ class TextToBinaryConverter {
             // Nuevos botones de copia para módulo
             { buttonId: 'copyDividendInput', getValue: () => this.dividendInput?.value },
             { buttonId: 'copyDivisorInput', getValue: () => this.divisorInput?.value },
-            { buttonId: 'copyModuloOutput', getValue: () => this.getOutputText(this.moduloOutput, CONFIG.MESSAGES.MODULO_PLACEHOLDER) }
+            { buttonId: 'copyModuloOutput', getValue: () => this.getOutputText(this.moduloOutput, CONFIG.MESSAGES.MODULO_PLACEHOLDER) },
+            
+            // Nuevos botones de copia para decimal fraccionario
+            { buttonId: 'copyFractionalDecimalInput', getValue: () => this.fractionalDecimalInput?.value },
+            { buttonId: 'copyFractionalDecimalBinaryOutput', getValue: () => this.getOutputText(this.fractionalDecimalBinaryOutput, CONFIG.MESSAGES.FRACTIONAL_DECIMAL_BINARY_PLACEHOLDER) }
         ];
 
         copyButtons.forEach(({ buttonId, getValue }) => {
@@ -272,6 +281,14 @@ class TextToBinaryConverter {
             this.moduloOutput.textContent = ConversionUtils.calculateModulo(
                 this.dividendInput?.value || '',
                 this.divisorInput?.value || ''
+            );
+        }
+    }
+
+    convertFractionalDecimalToBinary() {
+        if (this.fractionalDecimalBinaryOutput) {
+            this.fractionalDecimalBinaryOutput.textContent = ConversionUtils.fractionalDecimalToBinary(
+                this.fractionalDecimalInput?.value || ''
             );
         }
     }

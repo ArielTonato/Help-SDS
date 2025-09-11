@@ -3,7 +3,36 @@ import { CONFIG } from '../const.js';
 
 class ConversionUtils {
     static textToBinary(text) {
-        if (!text) return CONFIG.MESSAGES.BINARY_PLACEHOLDER;
+        if (!text) return CONFIG.MESS            // Paso 4: Calcular rangos
+            const ranges = {};
+            let cumulative = 0;
+
+            for (const char of uniqueChars) {
+                const start = cumulative;
+                const end = cumulative + probabilities[char];
+                ranges[char] = { start, end };
+                cumulative = end;
+            }
+
+            // Paso 5: Calcular límites inferiores y superiores para codificación aritmética
+            const arithmeticLimits = {};
+            let currentLower = 0;
+            let currentUpper = 1;
+
+            for (const char of uniqueChars) {
+                const range = ranges[char];
+                const newLower = currentLower + (currentUpper - currentLower) * range.start;
+                const newUpper = currentLower + (currentUpper - currentLower) * range.end;
+
+                arithmeticLimits[char] = {
+                    lower: newLower,
+                    upper: newUpper
+                };
+
+                // Actualizar límites para el siguiente carácter
+                currentLower = newLower;
+                currentUpper = newUpper;
+            }
         
         return text.split('').map(char => 
             char.charCodeAt(0).toString(2).padStart(8, '0')
@@ -167,7 +196,7 @@ class ConversionUtils {
                 probabilities[char] = frequencies[char] / totalChars;
             }
 
-            // Paso 4: Calcular rangos con precisión
+            // Paso 4: Calcular rangos
             const ranges = {};
             let cumulative = 0;
 
@@ -176,6 +205,26 @@ class ConversionUtils {
                 const end = cumulative + probabilities[char];
                 ranges[char] = { start, end };
                 cumulative = end;
+            }
+
+            // Paso 5: Calcular límites inferiores y superiores para codificación aritmética
+            const arithmeticLimits = {};
+            let currentLower = 0;
+            let currentUpper = 1;
+
+            for (const char of uniqueChars) {
+                const range = ranges[char];
+                const newLower = currentLower + (currentUpper - currentLower) * range.start;
+                const newUpper = currentLower + (currentUpper - currentLower) * range.end;
+
+                arithmeticLimits[char] = {
+                    lower: newLower,
+                    upper: newUpper
+                };
+
+                // Actualizar límites para el siguiente carácter
+                currentLower = newLower;
+                currentUpper = newUpper;
             }
 
             // Generar tabla HTML
@@ -187,6 +236,8 @@ class ConversionUtils {
                             <th>Frecuencia</th>
                             <th>Probabilidad</th>
                             <th>Rango</th>
+                            <th>Límite Inferior</th>
+                            <th>Límite Superior</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -196,11 +247,14 @@ class ConversionUtils {
                 const freq = frequencies[char];
                 const prob = probabilities[char];
                 const range = ranges[char];
+                const limits = arithmeticLimits[char];
 
-                // Formatear probabilidad con máximo 4 decimales
-                const probFormatted = this.formatDecimal(prob, CONFIG.ARITHMETIC.MAX_DECIMALS);
-                const startFormatted = this.formatDecimal(range.start, CONFIG.ARITHMETIC.MAX_DECIMALS);
-                const endFormatted = this.formatDecimal(range.end, CONFIG.ARITHMETIC.MAX_DECIMALS);
+                // Formatear valores con máximo 4 decimales
+                const probFormatted = ConversionUtils.formatDecimal(prob, CONFIG.ARITHMETIC.MAX_DECIMALS);
+                const startFormatted = ConversionUtils.formatDecimal(range.start, CONFIG.ARITHMETIC.MAX_DECIMALS);
+                const endFormatted = ConversionUtils.formatDecimal(range.end, CONFIG.ARITHMETIC.MAX_DECIMALS);
+                const lowerFormatted = ConversionUtils.formatDecimal(limits.lower, CONFIG.ARITHMETIC.MAX_DECIMALS);
+                const upperFormatted = ConversionUtils.formatDecimal(limits.upper, CONFIG.ARITHMETIC.MAX_DECIMALS);
 
                 // Mostrar espacios como "(espacio)" para mejor legibilidad
                 const displayChar = char === ' ' ? '(espacio)' : char;
@@ -211,6 +265,8 @@ class ConversionUtils {
                         <td>${freq}</td>
                         <td>${probFormatted}</td>
                         <td>[${startFormatted} - ${endFormatted}]</td>
+                        <td>${lowerFormatted}</td>
+                        <td>${upperFormatted}</td>
                     </tr>
                 `;
             }

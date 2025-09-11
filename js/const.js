@@ -14,7 +14,7 @@ const CONFIG = {
         MAX_PRECISION: 19
     },
     ARITHMETIC: {
-        MAX_DECIMALS: 4
+        MAX_DECIMALS: 15
     },
     ASCII: {
         UPPERCASE_START: 65,

@@ -13,6 +13,9 @@ const CONFIG = {
     FRACTIONAL_DECIMAL: {
         MAX_PRECISION: 19
     },
+    ARITHMETIC: {
+        MAX_DECIMALS: 4
+    },
     ASCII: {
         UPPERCASE_START: 65,
         UPPERCASE_END: 90,

@@ -10,7 +10,8 @@ class FontSizeController {
             decimalBinary: CONFIG.FONT_SIZE.DEFAULT,
             decimalOctal: CONFIG.FONT_SIZE.DEFAULT,
             modulo: CONFIG.FONT_SIZE.DEFAULT,
-            fractionalDecimalBinary: CONFIG.FONT_SIZE.DEFAULT
+            fractionalDecimalBinary: CONFIG.FONT_SIZE.DEFAULT,
+            arithmetic: CONFIG.FONT_SIZE.DEFAULT
         };
     }
 
@@ -22,6 +23,7 @@ class FontSizeController {
         this.setupFontControls('DecimalOctal', 'decimalOctal', () => [DOMUtils.getElementById('decimalOctalOutput')]);
         this.setupFontControls('Modulo', 'modulo', () => [DOMUtils.getElementById('moduloOutput')]);
         this.setupFontControls('FractionalDecimalBinary', 'fractionalDecimalBinary', () => [DOMUtils.getElementById('fractionalDecimalBinaryOutput')]);
+        this.setupFontControls('Arithmetic', 'arithmetic', () => [DOMUtils.getElementById('arithmeticTable')]);
     }
 
     setupFontControls(suffix, property, getElements) {

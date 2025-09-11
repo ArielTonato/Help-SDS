@@ -172,6 +172,10 @@ class TextToBinaryConverter {
         this.fractionalDecimalInput = DOMUtils.getElementById('fractionalDecimalInput');
         this.fractionalDecimalBinaryOutput = DOMUtils.getElementById('fractionalDecimalBinaryOutput');
         
+        // Nuevos elementos para codificación aritmética
+        this.arithmeticInput = DOMUtils.getElementById('arithmeticInput');
+        this.arithmeticTable = DOMUtils.getElementById('arithmeticTable');
+        
         // Elementos del diccionario
         this.dictionary = DOMUtils.getElementById('dictionary');
         this.showLowercase = DOMUtils.getElementById('showLowercase');
@@ -191,6 +195,7 @@ class TextToBinaryConverter {
         this.dividendInput?.addEventListener('input', () => this.calculateModulo());
         this.divisorInput?.addEventListener('input', () => this.calculateModulo());
         this.fractionalDecimalInput?.addEventListener('input', () => this.convertFractionalDecimalToBinary());
+        this.arithmeticInput?.addEventListener('input', () => this.generateArithmeticTable());
 
         // Controles del diccionario
         this.showLowercase?.addEventListener('change', () => this.updateDictionary());
@@ -233,7 +238,11 @@ class TextToBinaryConverter {
             
             // Nuevos botones de copia para decimal fraccionario
             { buttonId: 'copyFractionalDecimalInput', getValue: () => this.fractionalDecimalInput?.value },
-            { buttonId: 'copyFractionalDecimalBinaryOutput', getValue: () => this.getOutputText(this.fractionalDecimalBinaryOutput, CONFIG.MESSAGES.FRACTIONAL_DECIMAL_BINARY_PLACEHOLDER) }
+            { buttonId: 'copyFractionalDecimalBinaryOutput', getValue: () => this.getOutputText(this.fractionalDecimalBinaryOutput, CONFIG.MESSAGES.FRACTIONAL_DECIMAL_BINARY_PLACEHOLDER) },
+            
+            // Nuevos botones de copia para codificación aritmética
+            { buttonId: 'copyArithmeticInput', getValue: () => this.arithmeticInput?.value },
+            { buttonId: 'copyArithmeticTable', getValue: () => this.getArithmeticTableText() }
         ];
 
         copyButtons.forEach(({ buttonId, getValue }) => {
@@ -291,6 +300,36 @@ class TextToBinaryConverter {
                 this.fractionalDecimalInput?.value || ''
             );
         }
+    }
+
+    generateArithmeticTable() {
+        if (this.arithmeticTable) {
+            this.arithmeticTable.innerHTML = ConversionUtils.generateArithmeticTable(
+                this.arithmeticInput?.value || ''
+            );
+        }
+    }
+
+    getArithmeticTableText() {
+        if (this.arithmeticTable) {
+            // Extraer texto de la tabla para copiar
+            const rows = this.arithmeticTable.querySelectorAll('tr');
+            let text = '';
+
+            rows.forEach((row, index) => {
+                const cells = row.querySelectorAll('th, td');
+                const rowText = Array.from(cells).map(cell => cell.textContent).join('\t');
+                text += rowText + '\n';
+
+                // Agregar línea separadora después del encabezado
+                if (index === 0) {
+                    text += '-'.repeat(rowText.length) + '\n';
+                }
+            });
+
+            return text || null;
+        }
+        return null;
     }
 
     updateDictionary() {

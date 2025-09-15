@@ -176,6 +176,12 @@ class TextToBinaryConverter {
         this.arithmeticInput = DOMUtils.getElementById('arithmeticInput');
         this.arithmeticTable = DOMUtils.getElementById('arithmeticTable');
         
+        // Nuevos elementos para codificación aritmética AFIN
+        this.affinArithmeticInput = DOMUtils.getElementById('affinArithmeticInput');
+        this.affinArithmeticTable = DOMUtils.getElementById('affinArithmeticTable');
+        this.affinSequenceTable = DOMUtils.getElementById('affinSequenceTable');
+        this.affinResult = DOMUtils.getElementById('affinResult');
+        
         // Elementos del diccionario
         this.dictionary = DOMUtils.getElementById('dictionary');
         this.showLowercase = DOMUtils.getElementById('showLowercase');
@@ -196,6 +202,7 @@ class TextToBinaryConverter {
         this.divisorInput?.addEventListener('input', () => this.calculateModulo());
         this.fractionalDecimalInput?.addEventListener('input', () => this.convertFractionalDecimalToBinary());
         this.arithmeticInput?.addEventListener('input', () => this.generateArithmeticTable());
+        this.affinArithmeticInput?.addEventListener('input', () => this.generateAffinArithmeticTables());
 
         // Controles del diccionario
         this.showLowercase?.addEventListener('change', () => this.updateDictionary());
@@ -242,7 +249,13 @@ class TextToBinaryConverter {
             
             // Nuevos botones de copia para codificación aritmética
             { buttonId: 'copyArithmeticInput', getValue: () => this.arithmeticInput?.value },
-            { buttonId: 'copyArithmeticTable', getValue: () => this.getArithmeticTableText() }
+            { buttonId: 'copyArithmeticTable', getValue: () => this.getArithmeticTableText() },
+            
+            // Nuevos botones de copia para codificación aritmética AFIN
+            { buttonId: 'copyAffinArithmeticInput', getValue: () => this.affinArithmeticInput?.value },
+            { buttonId: 'copyAffinArithmeticTable', getValue: () => this.getTableText(this.affinArithmeticTable) },
+            { buttonId: 'copyAffinSequenceTable', getValue: () => this.getTableText(this.affinSequenceTable) },
+            { buttonId: 'copyAffinResult', getValue: () => this.getResultText(this.affinResult) }
         ];
 
         copyButtons.forEach(({ buttonId, getValue }) => {
@@ -328,6 +341,62 @@ class TextToBinaryConverter {
             });
 
             return text || null;
+        }
+        return null;
+    }
+
+    generateAffinArithmeticTables() {
+        const message = this.affinArithmeticInput?.value || '';
+        
+        // Generar tabla de frecuencias
+        const frequencyTableData = ConversionUtils.generateAffinArithmeticTable(message);
+        if (this.affinArithmeticTable) {
+            if (typeof frequencyTableData === 'string') {
+                this.affinArithmeticTable.innerHTML = frequencyTableData;
+            } else {
+                this.affinArithmeticTable.innerHTML = frequencyTableData.tableHTML;
+            }
+        }
+
+        // Generar tabla de secuencia
+        const sequenceTableData = ConversionUtils.generateAffinSequenceTable(message);
+        if (this.affinSequenceTable) {
+            if (typeof sequenceTableData === 'string') {
+                this.affinSequenceTable.innerHTML = sequenceTableData;
+            } else {
+                this.affinSequenceTable.innerHTML = sequenceTableData.sequenceHTML;
+            }
+        }
+
+        // Generar resultado
+        if (this.affinResult) {
+            this.affinResult.innerHTML = ConversionUtils.generateAffinResult(message);
+        }
+    }
+
+    getTableText(tableElement) {
+        if (tableElement) {
+            const rows = tableElement.querySelectorAll('tr');
+            let text = '';
+
+            rows.forEach((row, index) => {
+                const cells = row.querySelectorAll('th, td');
+                const rowText = Array.from(cells).map(cell => cell.textContent).join('\t');
+                text += rowText + '\n';
+
+                if (index === 0) {
+                    text += '-'.repeat(rowText.length) + '\n';
+                }
+            });
+
+            return text || null;
+        }
+        return null;
+    }
+
+    getResultText(resultElement) {
+        if (resultElement) {
+            return resultElement.textContent || null;
         }
         return null;
     }

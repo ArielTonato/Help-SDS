@@ -288,6 +288,54 @@
                     </div>
                 </div>
             </div>
+
+            <div class="section">
+                <h2>🔢 Codificación Aritmética AFIN</h2>
+                <div class="input-group">
+                    <label for="affinArithmeticInput">Ingresa el mensaje:</label>
+                    <div class="input-with-copy">
+                        <input type="text" id="affinArithmeticInput" class="text-input" placeholder="Ej: TABLA">
+                        <button type="button" id="copyAffinArithmeticInput" class="copy-btn" title="Copiar mensaje">📋</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Tabla de Frecuencias y Rangos (Orden Alfabético):</label>
+                    <div class="affin-arithmetic-controls">
+                        <div class="button-group">
+                            <button type="button" id="decreaseAffinArithmeticFont" class="size-btn">A-</button>
+                            <button type="button" id="increaseAffinArithmeticFont" class="size-btn">A+</button>
+                            <button type="button" id="copyAffinArithmeticTable" class="copy-btn" title="Copiar tabla">📋</button>
+                        </div>
+                    </div>
+                    <div id="affinArithmeticTable" class="arithmetic-table">
+                        <div class="table-placeholder">La tabla de frecuencias aparecerá aquí...</div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Tabla de Codificación (Secuencia del Mensaje):</label>
+                    <div class="affin-sequence-controls">
+                        <div class="button-group">
+                            <button type="button" id="decreaseAffinSequenceFont" class="size-btn">A-</button>
+                            <button type="button" id="increaseAffinSequenceFont" class="size-btn">A+</button>
+                            <button type="button" id="copyAffinSequenceTable" class="copy-btn" title="Copiar tabla">📋</button>
+                        </div>
+                    </div>
+                    <div id="affinSequenceTable" class="arithmetic-table">
+                        <div class="table-placeholder">La tabla de codificación aparecerá aquí...</div>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Resultado Final:</label>
+                    <div class="affin-result-controls">
+                        <div class="button-group">
+                            <button type="button" id="decreaseAffinResultFont" class="size-btn">A-</button>
+                            <button type="button" id="increaseAffinResultFont" class="size-btn">A+</button>
+                            <button type="button" id="copyAffinResult" class="copy-btn" title="Copiar resultado">📋</button>
+                        </div>
+                    </div>
+                    <div id="affinResult" class="arithmetic-result">El resultado aparecerá aquí...</div>
+                </div>
+            </div>
         </div>
     </div>
     <script src="js/index.js" type="module"></script>

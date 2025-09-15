@@ -11,7 +11,10 @@ class FontSizeController {
             decimalOctal: CONFIG.FONT_SIZE.DEFAULT,
             modulo: CONFIG.FONT_SIZE.DEFAULT,
             fractionalDecimalBinary: CONFIG.FONT_SIZE.DEFAULT,
-            arithmetic: CONFIG.FONT_SIZE.DEFAULT
+            arithmetic: CONFIG.FONT_SIZE.DEFAULT,
+            affinArithmetic: CONFIG.FONT_SIZE.DEFAULT,
+            affinSequence: CONFIG.FONT_SIZE.DEFAULT,
+            affinResult: CONFIG.FONT_SIZE.DEFAULT
         };
     }
 
@@ -24,6 +27,9 @@ class FontSizeController {
         this.setupFontControls('Modulo', 'modulo', () => [DOMUtils.getElementById('moduloOutput')]);
         this.setupFontControls('FractionalDecimalBinary', 'fractionalDecimalBinary', () => [DOMUtils.getElementById('fractionalDecimalBinaryOutput')]);
         this.setupFontControls('Arithmetic', 'arithmetic', () => [DOMUtils.getElementById('arithmeticTable')]);
+        this.setupFontControls('AffinArithmetic', 'affinArithmetic', () => [DOMUtils.getElementById('affinArithmeticTable')]);
+        this.setupFontControls('AffinSequence', 'affinSequence', () => [DOMUtils.getElementById('affinSequenceTable')]);
+        this.setupFontControls('AffinResult', 'affinResult', () => [DOMUtils.getElementById('affinResult')]);
     }
 
     setupFontControls(suffix, property, getElements) {

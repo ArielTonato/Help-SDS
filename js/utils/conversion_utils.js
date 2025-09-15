@@ -347,6 +347,205 @@ class ConversionUtils {
 
         return str;
     }
+
+    static generateAffinArithmeticTable(message) {
+        if (!message || message === '') {
+            return '<div class="table-placeholder">Ingresa un mensaje para generar la tabla</div>';
+        }
+
+        try {
+            const cleanMessage = message.toUpperCase();
+            const totalChars = cleanMessage.length;
+
+            // Paso 1: Obtener caracteres únicos
+            const uniqueChars = [...new Set(cleanMessage.split(''))];
+
+            // Paso 2: Calcular frecuencias
+            const frequencies = {};
+            for (const char of uniqueChars) {
+                frequencies[char] = (cleanMessage.split(char).length - 1);
+            }
+
+            // Paso 3: Calcular probabilidades
+            const probabilities = {};
+            for (const char of uniqueChars) {
+                probabilities[char] = frequencies[char] / totalChars;
+            }
+
+            // Paso 4: Ordenar alfabéticamente y calcular rangos
+            const sortedChars = uniqueChars.sort();
+            const ranges = {};
+            let cumulative = 0;
+
+            for (const char of sortedChars) {
+                const start = cumulative;
+                const end = cumulative + probabilities[char];
+                ranges[char] = { start, end };
+                cumulative = end;
+            }
+
+            // Generar tabla HTML para frecuencias y rangos
+            let tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Carácter</th>
+                            <th>Frecuencia</th>
+                            <th>Probabilidad</th>
+                            <th>Rango</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            for (const char of sortedChars) {
+                const freq = frequencies[char];
+                const prob = probabilities[char];
+                const range = ranges[char];
+
+                const probFormatted = this.formatDecimal(prob, CONFIG.ARITHMETIC.MAX_DECIMALS);
+                const startFormatted = this.formatDecimal(range.start, CONFIG.ARITHMETIC.MAX_DECIMALS);
+                const endFormatted = this.formatDecimal(range.end, CONFIG.ARITHMETIC.MAX_DECIMALS);
+
+                const displayChar = char === ' ' ? '(espacio)' : char;
+
+                tableHTML += `
+                    <tr>
+                        <td>${displayChar}</td>
+                        <td>${freq}</td>
+                        <td>${probFormatted}</td>
+                        <td>[${startFormatted} - ${endFormatted}]</td>
+                    </tr>
+                `;
+            }
+
+            tableHTML += `
+                    </tbody>
+                </table>
+            `;
+
+            return { tableHTML, ranges, sortedChars };
+        } catch (error) {
+            return '<div class="table-placeholder">Error al generar la tabla</div>';
+        }
+    }
+
+    static generateAffinSequenceTable(message) {
+        if (!message || message === '') {
+            return '<div class="table-placeholder">Ingresa un mensaje para generar la tabla</div>';
+        }
+
+        try {
+            // Obtener la tabla de rangos
+            const tableData = this.generateAffinArithmeticTable(message);
+            if (typeof tableData === 'string') {
+                return tableData; // Error
+            }
+
+            const { ranges } = tableData;
+            const cleanMessage = message.toUpperCase();
+
+            // Generar tabla de secuencia
+            let sequenceHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Carácter</th>
+                            <th>Rango Inicial</th>
+                            <th>Rango</th>
+                            <th>Nuevo Inferior</th>
+                            <th>Nuevo Superior</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            let currentLower = 0;
+            let currentUpper = 1;
+
+            for (let i = 0; i < cleanMessage.length; i++) {
+                const char = cleanMessage[i];
+                const charRange = ranges[char];
+                const rangeSize = currentUpper - currentLower;
+
+                const newLower = currentLower + (rangeSize * charRange.start);
+                const newUpper = currentLower + (rangeSize * charRange.end);
+
+                const displayChar = char === ' ' ? '(espacio)' : char;
+                const initialRangeFormatted = `[${this.formatDecimal(currentLower, CONFIG.ARITHMETIC.MAX_DECIMALS)} - ${this.formatDecimal(currentUpper, CONFIG.ARITHMETIC.MAX_DECIMALS)}]`;
+                const rangeSizeFormatted = this.formatDecimal(rangeSize, CONFIG.ARITHMETIC.MAX_DECIMALS);
+                const newLowerFormatted = this.formatDecimal(newLower, CONFIG.ARITHMETIC.MAX_DECIMALS);
+                const newUpperFormatted = this.formatDecimal(newUpper, CONFIG.ARITHMETIC.MAX_DECIMALS);
+
+                sequenceHTML += `
+                    <tr>
+                        <td>${displayChar}</td>
+                        <td>${initialRangeFormatted}</td>
+                        <td>${rangeSizeFormatted}</td>
+                        <td>${newLowerFormatted}</td>
+                        <td>${newUpperFormatted}</td>
+                    </tr>
+                `;
+
+                // Actualizar para el siguiente carácter
+                currentLower = newLower;
+                currentUpper = newUpper;
+            }
+
+            sequenceHTML += `
+                    </tbody>
+                </table>
+            `;
+
+            // Calcular el resultado final
+            const finalDifference = currentUpper - currentLower;
+            const finalValue = (currentUpper + currentLower) / 2;
+
+            const result = {
+                sequenceHTML,
+                finalLower: currentLower,
+                finalUpper: currentUpper,
+                finalDifference,
+                finalValue
+            };
+
+            return result;
+        } catch (error) {
+            return '<div class="table-placeholder">Error al generar la tabla</div>';
+        }
+    }
+
+    static generateAffinResult(message) {
+        if (!message || message === '') {
+            return CONFIG.MESSAGES.AFFIN_RESULT_PLACEHOLDER;
+        }
+
+        try {
+            const sequenceData = this.generateAffinSequenceTable(message);
+            if (typeof sequenceData === 'string') {
+                return 'Error al calcular el resultado';
+            }
+
+            const { finalLower, finalUpper, finalDifference, finalValue } = sequenceData;
+
+            const finalLowerFormatted = this.formatDecimal(finalLower, CONFIG.ARITHMETIC.MAX_DECIMALS);
+            const finalUpperFormatted = this.formatDecimal(finalUpper, CONFIG.ARITHMETIC.MAX_DECIMALS);
+            const finalDifferenceFormatted = this.formatDecimal(finalDifference, CONFIG.ARITHMETIC.MAX_DECIMALS);
+            const finalValueFormatted = this.formatDecimal(finalValue, CONFIG.ARITHMETIC.MAX_DECIMALS);
+
+            return `
+                <div class="result-summary">
+                    <h4>Resultado Final de la Codificación:</h4>
+                    <p><strong>Nuevo Inferior Final:</strong> ${finalLowerFormatted}</p>
+                    <p><strong>Nuevo Superior Final:</strong> ${finalUpperFormatted}</p>
+                    <p><strong>Diferencia:</strong> ${finalDifferenceFormatted}</p>
+                    <p><strong>Valor para Decodificar:</strong> ${finalValueFormatted}</p>
+                </div>
+            `;
+        } catch (error) {
+            return 'Error al calcular el resultado';
+        }
+    }
 }
 
 export { ConversionUtils };

@@ -3,36 +3,7 @@ import { CONFIG } from '../const.js';
 
 class ConversionUtils {
     static textToBinary(text) {
-        if (!text) return CONFIG.MESS            // Paso 4: Calcular rangos
-            const ranges = {};
-            let cumulative = 0;
-
-            for (const char of uniqueChars) {
-                const start = cumulative;
-                const end = cumulative + probabilities[char];
-                ranges[char] = { start, end };
-                cumulative = end;
-            }
-
-            // Paso 5: Calcular límites inferiores y superiores para codificación aritmética
-            const arithmeticLimits = {};
-            let currentLower = 0;
-            let currentUpper = 1;
-
-            for (const char of uniqueChars) {
-                const range = ranges[char];
-                const newLower = currentLower + (currentUpper - currentLower) * range.start;
-                const newUpper = currentLower + (currentUpper - currentLower) * range.end;
-
-                arithmeticLimits[char] = {
-                    lower: newLower,
-                    upper: newUpper
-                };
-
-                // Actualizar límites para el siguiente carácter
-                currentLower = newLower;
-                currentUpper = newUpper;
-            }
+        if (!text) return CONFIG.MESSAGES.BINARY_PLACEHOLDER;
         
         return text.split('').map(char => 
             char.charCodeAt(0).toString(2).padStart(8, '0')

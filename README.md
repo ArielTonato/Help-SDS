@@ -41,6 +41,23 @@ Una aplicación web interactiva que permite convertir texto a formato binario y 
 - Formato: x mod y = resultado
 - Ejemplo: "17 mod 5" → "2"
 
+#### Conversión de Decimal Fraccionario a Binario
+- Conversión de números decimales con parte fraccionaria a binario
+- Precisión: Máximo 19 dígitos decimales
+- Formato: parte entera.parte fraccionaria en binario
+- Ejemplo: "0.00239" → "0.0000000010011100101"
+
+#### Codificación Aritmética
+- Análisis completo de mensajes para codificación aritmética
+- Tabla automática con:
+  - Caracteres únicos en orden de aparición
+  - Frecuencia de cada carácter
+  - Probabilidad (con alta precisión decimal)
+  - Rangos acumulativos
+  - Límites inferiores y superiores para codificación
+- Consideración completa de espacios
+- Ejemplo: "ALESSANDRO" genera tabla con A, L, E, S, N, D, R, O
+
 ### 🎨 Interfaz de Usuario
 
 #### Controles de Tamaño de Fuente
@@ -53,6 +70,8 @@ Una aplicación web interactiva que permite convertir texto a formato binario y 
   - Salida decimal a binario
   - Salida decimal a octal
   - Resultado de módulo
+  - Salida decimal fraccionario a binario
+  - Tabla de codificación aritmética
 
 #### Funcionalidad de Copiado
 - Botones de copia (📋) para todas las entradas y salidas
@@ -125,7 +144,9 @@ Simplemente abre el archivo `index.html` en tu navegador web.
 3. **Decimal a binario**: Ingresa números (0-255) o letras hex (A-F)
 4. **Decimal a octal**: Ingresa números decimales (0-255)
 5. **Módulo**: Ingresa dividendo y divisor para calcular el resto
-6. Los resultados aparecen instantáneamente
+6. **Decimal fraccionario a binario**: Ingresa números con decimales
+7. **Codificación aritmética**: Ingresa cualquier mensaje (incluyendo espacios)
+8. Los resultados aparecen instantáneamente
 
 ### 3. Ajustar Visualización
 - Usa los botones **A+** y **A-** para cambiar el tamaño de fuente
@@ -135,7 +156,9 @@ Simplemente abre el archivo `index.html` en tu navegador web.
 
 - **Educación**: Aprender conversiones de texto a binario/hexadecimal
 - **Programación**: Verificar codificaciones de caracteres
-- **Criptografía**: Análisis de representaciones numéricas
+- **Criptografía**: Análisis de representaciones numéricas y codificación aritmética
+- **Algoritmos de compresión**: Implementación y análisis de codificación aritmética
+- **Matemáticas aplicadas**: Conversiones entre sistemas numéricos y fracciones
 - **Debugging**: Inspeccionar valores de caracteres
 
 ## 🔧 Estructura del Proyecto
@@ -163,6 +186,8 @@ Este proyecto está abierto a mejoras. Algunas ideas para futuras característic
 - [X] Conversión decimal a binario
 - [X] Conversión decimal a octal
 - [X] Calculadora de módulo
+- [X] Conversión de decimal fraccionario a binario
+- [X] Tabla de codificación aritmética completa
 - [X] Funcionalidad de copiado completa
 - [X] Controles de tamaño de fuente para todas las secciones
 - [ ] Exportar resultados a archivo

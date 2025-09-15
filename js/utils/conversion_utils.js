@@ -373,7 +373,12 @@ class ConversionUtils {
             }
 
             // Paso 4: Ordenar alfabéticamente y calcular rangos
-            const sortedChars = uniqueChars.sort();
+            // Separar letras normales de espacios y caracteres especiales
+            const normalChars = uniqueChars.filter(char => /^[A-Z]$/.test(char));
+            const specialChars = uniqueChars.filter(char => !/^[A-Z]$/.test(char));
+            
+            // Ordenar letras alfabéticamente, luego agregar espacios y caracteres especiales
+            const sortedChars = [...normalChars.sort(), ...specialChars];
             const ranges = {};
             let cumulative = 0;
 

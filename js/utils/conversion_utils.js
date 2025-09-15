@@ -283,49 +283,48 @@ class ConversionUtils {
     }
 
     static formatDecimal(number, maxDecimals) {
-        // Para números muy cercanos a fracciones simples, mostrar la representación exacta
+        // Intentar convertir a fracción exacta
+        const fraction = this.decimalToFraction(number);
+        if (fraction) {
+            return fraction;
+        }
+
+        // Si no se puede convertir a fracción simple, usar decimal
         const tolerance = 1e-12;
 
         // Buscar fracciones comunes
         const commonFractions = [
-            { num: 1, den: 2, str: '0.5' },
-            { num: 1, den: 3, str: '0.3333333333333333' },
-            { num: 2, den: 3, str: '0.6666666666666666' },
-            { num: 1, den: 4, str: '0.25' },
-            { num: 3, den: 4, str: '0.75' },
-            { num: 1, den: 5, str: '0.2' },
-            { num: 2, den: 5, str: '0.4' },
-            { num: 3, den: 5, str: '0.6' },
-            { num: 4, den: 5, str: '0.8' },
-            { num: 1, den: 6, str: '0.16666666666666666' },
-            { num: 5, den: 6, str: '0.8333333333333334' },
-            { num: 1, den: 7, str: '0.14285714285714285' },
-            { num: 2, den: 7, str: '0.2857142857142857' },
-            { num: 3, den: 7, str: '0.42857142857142855' },
-            { num: 4, den: 7, str: '0.5714285714285714' },
-            { num: 5, den: 7, str: '0.7142857142857143' },
-            { num: 6, den: 7, str: '0.8571428571428571' },
-            { num: 1, den: 8, str: '0.125' },
-            { num: 3, den: 8, str: '0.375' },
-            { num: 5, den: 8, str: '0.625' },
-            { num: 7, den: 8, str: '0.875' },
-            { num: 1, den: 9, str: '0.1111111111111111' },
-            { num: 2, den: 9, str: '0.2222222222222222' },
-            { num: 4, den: 9, str: '0.4444444444444444' },
-            { num: 5, den: 9, str: '0.5555555555555556' },
-            { num: 7, den: 9, str: '0.7777777777777778' },
-            { num: 8, den: 9, str: '0.8888888888888888' },
-            { num: 1, den: 10, str: '0.1' },
-            { num: 1, den: 11, str: '0.09090909090909091' },
-            { num: 2, den: 11, str: '0.18181818181818182' },
-            { num: 3, den: 11, str: '0.2727272727272727' },
-            { num: 4, den: 11, str: '0.36363636363636365' },
-            { num: 5, den: 11, str: '0.45454545454545453' },
-            { num: 6, den: 11, str: '0.5454545454545454' },
-            { num: 7, den: 11, str: '0.6363636363636364' },
-            { num: 8, den: 11, str: '0.7272727272727273' },
-            { num: 9, den: 11, str: '0.8181818181818182' },
-            { num: 10, den: 11, str: '0.9090909090909091' }
+            { num: 1, den: 2, str: '1/2' },
+            { num: 1, den: 3, str: '1/3' },
+            { num: 2, den: 3, str: '2/3' },
+            { num: 1, den: 4, str: '1/4' },
+            { num: 3, den: 4, str: '3/4' },
+            { num: 1, den: 5, str: '1/5' },
+            { num: 2, den: 5, str: '2/5' },
+            { num: 3, den: 5, str: '3/5' },
+            { num: 4, den: 5, str: '4/5' },
+            { num: 1, den: 6, str: '1/6' },
+            { num: 5, den: 6, str: '5/6' },
+            { num: 1, den: 7, str: '1/7' },
+            { num: 2, den: 7, str: '2/7' },
+            { num: 3, den: 7, str: '3/7' },
+            { num: 4, den: 7, str: '4/7' },
+            { num: 5, den: 7, str: '5/7' },
+            { num: 6, den: 7, str: '6/7' },
+            { num: 1, den: 8, str: '1/8' },
+            { num: 3, den: 8, str: '3/8' },
+            { num: 5, den: 8, str: '5/8' },
+            { num: 7, den: 8, str: '7/8' },
+            { num: 1, den: 9, str: '1/9' },
+            { num: 2, den: 9, str: '2/9' },
+            { num: 4, den: 9, str: '4/9' },
+            { num: 5, den: 9, str: '5/9' },
+            { num: 7, den: 9, str: '7/9' },
+            { num: 8, den: 9, str: '8/9' },
+            { num: 1, den: 10, str: '1/10' },
+            { num: 3, den: 10, str: '3/10' },
+            { num: 7, den: 10, str: '7/10' },
+            { num: 9, den: 10, str: '9/10' }
         ];
 
         for (const fraction of commonFractions) {
@@ -334,18 +333,49 @@ class ConversionUtils {
             }
         }
 
-        // Para otros casos, usar toFixed con precisión limitada
+        // Para otros casos, usar decimal limitado
         let str = number.toFixed(Math.min(maxDecimals, 15));
-
-        // Remover ceros finales
         str = str.replace(/\.?0+$/, '');
-
-        // Si no hay parte decimal, agregar .0
         if (!str.includes('.')) {
             str += '.0';
         }
-
         return str;
+    }
+
+    static decimalToFraction(decimal) {
+        if (decimal === 0) return '0';
+        if (decimal === 1) return '1';
+
+        const tolerance = 1e-6;
+        let numerator = 1;
+        let denominator = 1;
+
+        // Buscar fracción simple usando el algoritmo de fracciones continuas
+        for (let d = 1; d <= 1000; d++) {
+            for (let n = 1; n < d; n++) {
+                if (Math.abs(n / d - decimal) < tolerance) {
+                    // Simplificar la fracción
+                    const gcd = this.gcd(n, d);
+                    const simplifiedNum = n / gcd;
+                    const simplifiedDen = d / gcd;
+                    
+                    if (simplifiedDen <= 100) { // Solo mostrar fracciones con denominador pequeño
+                        return `${simplifiedNum}/${simplifiedDen}`;
+                    }
+                }
+            }
+        }
+
+        return null; // No se encontró fracción simple
+    }
+
+    static gcd(a, b) {
+        while (b !== 0) {
+            const temp = b;
+            b = a % b;
+            a = temp;
+        }
+        return a;
     }
 
     static generateAffinArithmeticTable(message) {

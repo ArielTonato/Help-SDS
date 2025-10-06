@@ -27,6 +27,7 @@ const CONFIG = {
     MESSAGES: {
         BINARY_PLACEHOLDER: 'El binario aparecerá aquí...',
         HEX_PLACEHOLDER: 'El hexadecimal aparecerá aquí...',
+        BINARY_HEX_PLACEHOLDER: 'El hexadecimal aparecerá aquí...',
         OCTAL_PLACEHOLDER: 'El octal aparecerá aquí...',
         MODULO_PLACEHOLDER: 'El resultado aparecerá aquí...',
         FRACTIONAL_DECIMAL_BINARY_PLACEHOLDER: 'El binario aparecerá aquí...',
@@ -34,6 +35,7 @@ const CONFIG = {
         AFFIN_SEQUENCE_PLACEHOLDER: 'La tabla de codificación aparecerá aquí...',
         AFFIN_RESULT_PLACEHOLDER: 'El resultado aparecerá aquí...',
         DECIMAL_ERROR: 'Error: Ingresa un valor entre 0-255 o A-FF',
+        BINARY_ERROR: 'Error: Ingresa un número binario válido (solo 0s y 1s, máx. 8 bits)',
         OCTAL_ERROR: 'Error: Ingresa un número decimal válido entre 0-255',
         MODULO_ERROR: 'Error: Ingresa números válidos (el divisor no puede ser 0)',
         FRACTIONAL_DECIMAL_ERROR: 'Error: Ingresa un número decimal válido',

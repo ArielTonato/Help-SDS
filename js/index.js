@@ -159,6 +159,10 @@ class TextToBinaryConverter {
         this.decimalInput = DOMUtils.getElementById('decimalInput');
         this.decimalBinaryOutput = DOMUtils.getElementById('decimalBinaryOutput');
         
+        // Nuevos elementos para binario a hexadecimal
+        this.binaryInput = DOMUtils.getElementById('binaryInput');
+        this.binaryHexOutput = DOMUtils.getElementById('binaryHexOutput');
+        
         // Nuevos elementos para octal
         this.decimalOctalInput = DOMUtils.getElementById('decimalOctalInput');
         this.decimalOctalOutput = DOMUtils.getElementById('decimalOctalOutput');
@@ -195,6 +199,7 @@ class TextToBinaryConverter {
         this.textInput?.addEventListener('input', () => this.convertToBinary());
         this.textInputHex?.addEventListener('input', () => this.convertToHex());
         this.decimalInput?.addEventListener('input', () => this.convertDecimalToBinary());
+        this.binaryInput?.addEventListener('input', () => this.convertBinaryToHex());
         
         // Nuevas conversiones
         this.decimalOctalInput?.addEventListener('input', () => this.convertDecimalToOctal());
@@ -233,6 +238,10 @@ class TextToBinaryConverter {
             { buttonId: 'copyHexOutput', getValue: () => this.getOutputText(this.hexOutput, CONFIG.MESSAGES.HEX_PLACEHOLDER) },
             { buttonId: 'copyDecimalInput', getValue: () => this.decimalInput?.value },
             { buttonId: 'copyDecimalBinaryOutput', getValue: () => this.getOutputText(this.decimalBinaryOutput, CONFIG.MESSAGES.BINARY_PLACEHOLDER) },
+            
+            // Nuevos botones de copia para binario a hexadecimal
+            { buttonId: 'copyBinaryInput', getValue: () => this.binaryInput?.value },
+            { buttonId: 'copyBinaryHexOutput', getValue: () => this.getOutputText(this.binaryHexOutput, CONFIG.MESSAGES.BINARY_HEX_PLACEHOLDER) },
             
             // Nuevos botones de copia para octal
             { buttonId: 'copyDecimalOctalInput', getValue: () => this.decimalOctalInput?.value },
@@ -289,6 +298,12 @@ class TextToBinaryConverter {
     convertDecimalToBinary() {
         if (this.decimalBinaryOutput) {
             this.decimalBinaryOutput.textContent = ConversionUtils.decimalToBinary(this.decimalInput?.value || '');
+        }
+    }
+
+    convertBinaryToHex() {
+        if (this.binaryHexOutput) {
+            this.binaryHexOutput.textContent = ConversionUtils.binaryToHex(this.binaryInput?.value || '');
         }
     }
 

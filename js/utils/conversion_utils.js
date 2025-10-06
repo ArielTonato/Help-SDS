@@ -53,6 +53,33 @@ class ConversionUtils {
         }
     }
 
+    static binaryToHex(input) {
+        if (!input) return CONFIG.MESSAGES.BINARY_HEX_PLACEHOLDER;
+
+        try {
+            const binaryString = input.trim().replace(/\s+/g, '');
+            
+            // Validar que solo contenga 0s y 1s
+            if (!/^[01]+$/.test(binaryString)) {
+                return CONFIG.MESSAGES.BINARY_ERROR;
+            }
+
+            // Validar que no exceda 8 bits
+            if (binaryString.length > 8) {
+                return CONFIG.MESSAGES.BINARY_ERROR;
+            }
+
+            // Convertir binario a decimal y luego a hexadecimal
+            const decimalValue = parseInt(binaryString, 2);
+            const hexValue = decimalValue.toString(16).toUpperCase();
+            
+            // Rellenar con cero si es necesario para tener 2 dígitos
+            return hexValue.padStart(2, '0');
+        } catch (error) {
+            return CONFIG.MESSAGES.FORMAT_ERROR;
+        }
+    }
+
     static calculateModulo(dividend, divisor) {
         if (!dividend || !divisor) return CONFIG.MESSAGES.MODULO_PLACEHOLDER;
 

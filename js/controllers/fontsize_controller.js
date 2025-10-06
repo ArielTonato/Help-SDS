@@ -8,6 +8,7 @@ class FontSizeController {
             binary: CONFIG.FONT_SIZE.DEFAULT,
             hex: CONFIG.FONT_SIZE.DEFAULT,
             decimalBinary: CONFIG.FONT_SIZE.DEFAULT,
+            binaryHex: CONFIG.FONT_SIZE.DEFAULT,
             decimalOctal: CONFIG.FONT_SIZE.DEFAULT,
             modulo: CONFIG.FONT_SIZE.DEFAULT,
             fractionalDecimalBinary: CONFIG.FONT_SIZE.DEFAULT,
@@ -23,6 +24,7 @@ class FontSizeController {
         this.setupFontControls('Binary', 'binary', () => [DOMUtils.getElementById('binaryOutput')]);
         this.setupFontControls('Hex', 'hex', () => [DOMUtils.getElementById('hexOutput')]);
         this.setupFontControls('DecimalBinary', 'decimalBinary', () => [DOMUtils.getElementById('decimalBinaryOutput')]);
+        this.setupFontControls('BinaryHex', 'binaryHex', () => [DOMUtils.getElementById('binaryHexOutput')]);
         this.setupFontControls('DecimalOctal', 'decimalOctal', () => [DOMUtils.getElementById('decimalOctalOutput')]);
         this.setupFontControls('Modulo', 'modulo', () => [DOMUtils.getElementById('moduloOutput')]);
         this.setupFontControls('FractionalDecimalBinary', 'fractionalDecimalBinary', () => [DOMUtils.getElementById('fractionalDecimalBinaryOutput')]);

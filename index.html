@@ -193,6 +193,28 @@
             </div>
 
             <div class="section">
+                <h2>🔄 Conversión de Binario a Hexadecimal</h2>
+                <div class="input-group">
+                    <label for="binaryInput">Ingresa número binario (máx. 8 bits):</label>
+                    <div class="input-with-copy">
+                        <input type="text" id="binaryInput" class="text-input" placeholder="Ej: 10101010, 11111111...">
+                        <button type="button" id="copyBinaryInput" class="copy-btn" title="Copiar entrada">📋</button>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Resultado en hexadecimal:</label>
+                    <div class="binary-hex-controls">
+                        <div class="button-group">
+                            <button type="button" id="decreaseBinaryHexFont" class="size-btn">A-</button>
+                            <button type="button" id="increaseBinaryHexFont" class="size-btn">A+</button>
+                            <button type="button" id="copyBinaryHexOutput" class="copy-btn" title="Copiar hexadecimal">📋</button>
+                        </div>
+                    </div>
+                    <div id="binaryHexOutput" class="hex-output">El hexadecimal aparecerá aquí...</div>
+                </div>
+            </div>
+
+            <div class="section">
                 <h2>🔢 Conversión de Decimal Fraccionario a Binario</h2>
                 <div class="input-group">
                     <label for="fractionalDecimalInput">Ingresa número decimal fraccionario:</label>

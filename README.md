@@ -31,6 +31,12 @@ Una aplicación web interactiva que permite convertir texto a formato binario y 
 - Formato: resultado en 8 bits
 - Ejemplo: "255" → "11111111", "A" → "00001010"
 
+#### Binario a Hexadecimal
+- Conversión de números binarios (máximo 8 bits) a formato hexadecimal
+- Validación automática: solo acepta 0s y 1s
+- Formato: resultado en mayúsculas con padding de 2 dígitos
+- Ejemplo: "10101010" → "AA", "1111" → "0F", "11111111" → "FF"
+
 #### Decimal a Octal
 - Conversión de números decimales (0-255) a formato octal
 - Formato: representación en base 8
@@ -68,6 +74,7 @@ Una aplicación web interactiva que permite convertir texto a formato binario y 
   - Salida binaria
   - Salida hexadecimal
   - Salida decimal a binario
+  - Salida binario a hexadecimal
   - Salida decimal a octal
   - Resultado de módulo
   - Salida decimal fraccionario a binario
@@ -142,11 +149,12 @@ Simplemente abre el archivo `index.html` en tu navegador web.
 1. **Texto a binario**: Escribe en el primer campo de texto
 2. **Texto a hexadecimal**: Escribe en el segundo campo de texto
 3. **Decimal a binario**: Ingresa números (0-255) o letras hex (A-F)
-4. **Decimal a octal**: Ingresa números decimales (0-255)
-5. **Módulo**: Ingresa dividendo y divisor para calcular el resto
-6. **Decimal fraccionario a binario**: Ingresa números con decimales
-7. **Codificación aritmética**: Ingresa cualquier mensaje (incluyendo espacios)
-8. Los resultados aparecen instantáneamente
+4. **Binario a hexadecimal**: Ingresa números binarios (máximo 8 bits)
+5. **Decimal a octal**: Ingresa números decimales (0-255)
+6. **Módulo**: Ingresa dividendo y divisor para calcular el resto
+7. **Decimal fraccionario a binario**: Ingresa números con decimales
+8. **Codificación aritmética**: Ingresa cualquier mensaje (incluyendo espacios)
+9. Los resultados aparecen instantáneamente
 
 ### 3. Ajustar Visualización
 - Usa los botones **A+** y **A-** para cambiar el tamaño de fuente
@@ -184,6 +192,7 @@ Seguridad Web/
 Este proyecto está abierto a mejoras. Algunas ideas para futuras características:
 
 - [X] Conversión decimal a binario
+- [X] Conversión binario a hexadecimal
 - [X] Conversión decimal a octal
 - [X] Calculadora de módulo
 - [X] Conversión de decimal fraccionario a binario

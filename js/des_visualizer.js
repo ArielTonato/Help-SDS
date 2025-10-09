@@ -311,6 +311,160 @@ function sBoxResultsToAscii(sBoxResults) {
     return asciiChars;
 }
 
+// Permutación P (32 bits)
+function pPermutation(bits32) {
+    const pOrder = [
+        16, 7, 20, 21,
+        29, 12, 28, 17,
+        1, 15, 23, 26,
+        5, 18, 31, 10,
+        2, 8, 24, 14,
+        32, 27, 3, 9,
+        19, 13, 30, 6,
+        22, 11, 4, 25
+    ];
+    return pOrder.map(pos => bits32[pos - 1]).join('');
+}
+
+// Permutación final (IP^-1)
+function finalPermutation(bits64) {
+    const ipInv = [
+        40, 8, 48, 16, 56, 24, 64, 32,
+        39, 7, 47, 15, 55, 23, 63, 31,
+        38, 6, 46, 14, 54, 22, 62, 30,
+        37, 5, 45, 13, 53, 21, 61, 29,
+        36, 4, 44, 12, 52, 20, 60, 28,
+        35, 3, 43, 11, 51, 19, 59, 27,
+        34, 2, 42, 10, 50, 18, 58, 26,
+        33, 1, 41, 9, 49, 17, 57, 25
+    ];
+    return ipInv.map(pos => bits64[pos - 1]).join('');
+}
+
+// Función Feistel: toma R (32 bits) y subclave (48 bits) y devuelve 32 bits
+function feistelFunction(R32, subkey48) {
+    const expanded = expansionE(R32); // 48 bits
+    const xored = xorBinary(expanded, subkey48);
+    const groups = divideInto6BitGroups(xored);
+    const sresults = applySBoxes(groups).join(''); // 32 bits (8*4)
+    const permuted = pPermutation(sresults);
+    return permuted;
+}
+
+// Encriptar un bloque de 64 bits con la clave (binary 64). Devuelve 64 bits.
+function desBlockEncrypt(block64, key64) {
+    // Generar subclaves
+    const subkeys = generateSubkeys(key64);
+
+    // IP inicial
+    const permuted = initialPermutation(block64);
+    let L = permuted.slice(0, 32);
+    let R = permuted.slice(32);
+
+    for (let i = 0; i < 16; i++) {
+        const previousL = L;
+        L = R;
+        const f = feistelFunction(R, subkeys[i]);
+        R = xorBinary(previousL, f);
+    }
+
+    // Al finalizar las 16 rondas, combinar R16 + L16 (swap final)
+    const preoutput = R + L;
+    const cipher64 = finalPermutation(preoutput);
+    return cipher64;
+}
+
+// Convertir 64-bit binary a hex de 16 dígitos
+function binaryToHex(bin64) {
+    let hex = '';
+    for (let i = 0; i < 64; i += 4) {
+        const nibble = bin64.slice(i, i + 4);
+        hex += parseInt(nibble, 2).toString(16).padStart(1, '0');
+    }
+    return hex.toUpperCase();
+}
+
+// Dividir texto en bloques de 8 bytes con PKCS#7 (retorna array de 64-bit binary strings)
+function divideIntoBlocksPKCS7(text) {
+    const encoder = new TextEncoder();
+    const bytes = Array.from(encoder.encode(text));
+    const padLen = 8 - (bytes.length % 8) || 8;
+    for (let i = 0; i < padLen; i++) bytes.push(padLen);
+    const blocks = [];
+    for (let i = 0; i < bytes.length; i += 8) {
+        const chunk = bytes.slice(i, i + 8);
+        blocks.push(chunk.map(b => b.toString(2).padStart(8, '0')).join(''));
+    }
+    return blocks;
+}
+
+// CBC encrypt: recibe array de bloques (64-bit binary), clave (64-bit binary), devuelve { ivHex, cipherHexBlocks }
+function cbcEncryptBlocks(blocks64, key64) {
+    // Generar IV de 8 bytes aleatorio
+    const ivBytes = new Uint8Array(8);
+    if (typeof crypto !== 'undefined' && crypto.getRandomValues) {
+        crypto.getRandomValues(ivBytes);
+    } else {
+        // Fallback: Math.random
+        for (let i = 0; i < 8; i++) ivBytes[i] = Math.floor(Math.random() * 256);
+    }
+    const ivBin = Array.from(ivBytes).map(b => b.toString(2).padStart(8, '0')).join('');
+
+    const cipherHexBlocks = [];
+    const cipherBinBlocks = [];
+    let prev = ivBin;
+    for (const plain of blocks64) {
+        const xored = xorBinary(plain, prev);
+        const cipherBin = desBlockEncrypt(xored, key64);
+        cipherHexBlocks.push(binaryToHex(cipherBin));
+        cipherBinBlocks.push(cipherBin);
+        prev = cipherBin;
+    }
+
+    return { ivHex: binaryToHex(ivBin), ivBin, cipherHexBlocks, cipherBinBlocks };
+}
+
+// ECB encrypt: cifra cada bloque independientemente con DES usando key64
+function ecbEncryptBlocks(blocks64, key64) {
+    const cipherHexBlocks = [];
+    const cipherBinBlocks = [];
+    for (const plain of blocks64) {
+        const cipherBin = desBlockEncrypt(plain, key64);
+        cipherHexBlocks.push(binaryToHex(cipherBin));
+        cipherBinBlocks.push(cipherBin);
+    }
+    return { cipherHexBlocks, cipherBinBlocks };
+}
+
+// Convierte un bloque binario de 64 bits en 8 caracteres usando getSpecialCharacter
+function binary64ToAsciiString(bin64) {
+    const chars = [];
+    for (let i = 0; i < 64; i += 8) {
+        const byte = bin64.slice(i, i + 8);
+        const code = parseInt(byte, 2);
+        chars.push(getSpecialCharacter(code));
+    }
+    return chars.join('');
+}
+
+// Convierte un bloque binario de 64 bits a una fila de emojis (uno por byte).
+function binary64ToEmojiRow(bin64) {
+    const parts = [];
+    for (let i = 0; i < 64; i += 8) {
+        const byte = bin64.slice(i, i + 8);
+        const code = parseInt(byte, 2);
+        const rep = getSpecialCharacter(code);
+        // extraer emoji si la representación incluye '(char)'
+        let emoji = rep;
+        const parenIndex = rep.indexOf(' (');
+        if (parenIndex !== -1) emoji = rep.slice(0, parenIndex);
+        // si la representación es más larga que 2 caracteres, tomar el primer glifo
+        if (emoji.length > 2) emoji = emoji[0];
+        parts.push(`<span class="emoji-byte">${emoji}</span>`);
+    }
+    return parts.join(' ');
+}
+
 // Función para mostrar las S-boxes y su aplicación con detalle visual
 function showSBoxApplication(sixBitGroups, sBoxResults) {
     let html = '<div class="sbox-container">';
@@ -368,10 +522,31 @@ function getSpecialCharacter(charCode) {
         90: 'Z', 91: '[', 92: '\\', 93: ']', 94: '^', 95: '_', 96: '`', 97: 'a', 98: 'b', 99: 'c',
         100: 'd', 101: 'e', 102: 'f', 103: 'g', 104: 'h', 105: 'i', 106: 'j', 107: 'k', 108: 'l', 109: 'm',
         110: 'n', 111: 'o', 112: 'p', 113: 'q', 114: 'r', 115: 's', 116: 't', 117: 'u', 118: 'v', 119: 'w',
-        120: 'x', 121: 'y', 122: 'z', 123: '{', 124: '|', 125: '}', 126: '~', 127: '⌂'
+        120: 'x', 121: 'y', 122: 'z', 123: '{', 124: '|', 125: '}', 126: '~', 127: '⌂', 128: 'Ç',
+        129: 'ü', 130: 'é', 131: 'â', 132: 'ä', 133: 'à', 134: 'å', 135: 'ç', 136: 'ê', 137: 'ë', 138: 'è',
+        139: 'ï', 140: 'î', 141: 'ì', 142: 'Ä', 143: 'Å', 144: 'É', 145: 'æ', 146: 'Æ', 147: 'ô', 148: 'ö',
+        149: 'ò', 150: 'û', 151: 'ù', 152: 'ÿ', 153: 'Ö', 154: 'Ü', 155: 'ø', 156: '£', 157: 'Ø', 158: '×',
+        159: 'ƒ', 160: 'á', 161: 'í', 162: 'ó', 163: 'ú', 164: 'ñ', 165: 'Ñ', 166: 'ª', 167: 'º', 168: '¿',
+        169: '®', 170: '¬', 171: '½', 172: '¼', 173: '¡', 174: '«', 175: '»', 176: '░', 177: '▒', 178: '▓',
+        179: '│', 180: '┤', 181: 'Á', 182: 'Â', 183: 'À', 184: '©', 185: '╣', 186: '║', 187: '╗', 188: '╝',
+        189: '¢', 190: '¥', 191: '┐', 192: '└', 193: '┴', 194: '┬', 195: '├', 196: '─', 197: '┼', 198: 'ã',
+        199: 'Ã', 200: '╚', 201: '╔', 202: '╩', 203: '╦', 204: '╠', 205: '═', 206: '╬', 207: '¤', 208: 'ð',
+        209: 'Ð', 210: 'Ê', 211: 'Ë', 212: 'È', 213: 'ı', 214: 'Í', 215: 'Î', 216: 'Ï', 217: '┘', 218: '┌',
+        219: '█', 220: '▄', 221: '¦', 222: 'Ì', 223: '▀', 224: 'Ó', 225: 'ß', 226: 'Ô', 227: 'Ò', 228: 'õ',
+        229: 'Õ', 230: 'µ', 231: 'þ', 232: 'Þ', 233: 'Ú', 234: 'Û', 235: 'Ù', 236: 'ý', 237: 'Ý', 238: '¯',
+        239: '´', 240: '­', 241: '±', 242: '‗', 243: '¾', 244: '¶', 245: '§', 246: '÷', 247: '¸', 248: '°',
+        249: '¨', 250: '·', 251: '¹', 252: '³', 253: '²', 254: '■', 255: ' '
     };
-    
-    return specialChars[charCode] || `[${charCode}]`;
+    // Si existe una entrada directa, devolverla
+    if (Object.hasOwn(specialChars, charCode)) return specialChars[charCode];
+
+    // Para códigos extendidos (128..255) devolvemos un emoji determinístico y, si existe, el carácter CP437 entre paréntesis
+    if (charCode >= 128 && charCode <= 255) {
+        const cpChar = specialChars[charCode] || '';
+        return cpChar
+    }
+
+    return `[${charCode}]`;
 }
 
 // Función para mostrar la comparación antes del XOR
@@ -444,6 +619,13 @@ function formatAs7x8Matrix(binaryData) {
     return matrixHTML;
 }
 
+// Helper: formatea 28 bits en cuatro bloques de 7, unidos con ' - '
+function formatAs7BlocksLine(bits28) {
+    const parts = [];
+    for (let i = 0; i < bits28.length; i += 7) parts.push(bits28.slice(i, i + 7));
+    return parts.join(' - ');
+}
+
 // Función para mostrar selección de subclave
 function createSubkeySelector(subkeys) {
     let selectorHTML = '<div class="subkey-selector">';
@@ -457,10 +639,374 @@ function createSubkeySelector(subkeys) {
 }
 
 // Función principal del proceso de cifrado DES paso a paso
-function desEncryptionProcess(text, key) {
+function desEncryptionProcess(text, key, mode) {
     const stepsContainer = document.getElementById('encryptionSteps');
     stepsContainer.innerHTML = '';
 
+    // Detectar modo si no fue provisto: si existe selector en DOM, usarlo; sino, inferir por longitud
+    if (!mode) {
+        const selectEl = document.getElementById('modeSelectDES');
+        if (selectEl) mode = selectEl.value;
+        else mode = (text.length > 8) ? 'cbc' : 'single';
+    }
+
+    // Si el modo es CBC (multi-bloques) realizamos el flujo recomendado: PKCS#7 + CBC
+    if (mode === 'cbc') {
+        // Validaciones
+        if (!key || key.length !== 8) {
+            alert('Para modo CBC la clave debe tener 8 caracteres.');
+            return;
+        }
+
+        // Dividir con PKCS#7 (devuelve array de 64-bit binary strings)
+        const blocks64 = divideIntoBlocksPKCS7(text);
+        const keyBinary = textToBinary(key);
+
+        // Mostrar resumen de bloques de entrada
+        let html = `<div class="step-container"><div class="step-title">Modo: PKCS#7 + CBC — Bloques a cifrar (${blocks64.length})</div>`;
+        blocks64.forEach((blk, idx) => {
+            const chars = binary64ToAsciiString(blk);
+            html += `<p><strong>Bloque ${idx + 1} (bin):</strong> <span class="mono">${blk}</span> — <strong>hex:</strong> ${binaryToHex(blk)}</p>`;
+            html += `<p><strong>Caracteres (8):</strong> <span class="mono">${chars}</span></p>`;
+        });
+        html += '</div>';
+        stepsContainer.innerHTML += html;
+
+        // Mostrar visualización de clave (PC1, C0/D0, rotaciones y subclaves) una sola vez
+        stepsContainer.innerHTML += `
+            <div class="step-container">
+                <div class="step-title">Clave y Agenda (PC1, C0/D0, Rotaciones, Subclaves)</div>
+                ${visualizePC1(keyBinary)}
+            </div>
+        `;
+
+        const roundDetailsAll = getRoundDetails(keyBinary);
+        const onlyRoundsAll = roundDetailsAll.filter(d => d.round > 0);
+        let cdHTML = '<div class="step-container"><div class="step-title">Rotaciones (C1..C16 y D1..D16)</div>';
+        cdHTML += '<div class="cd-grid">';
+        onlyRoundsAll.forEach(d => {
+            cdHTML += `<div class="cd-item"><p class="cd-line"><strong>C${d.round}:</strong> ${formatAs7BlocksLine(d.C)}</p><p class="cd-line"><strong>D${d.round}:</strong> ${formatAs7BlocksLine(d.D)}</p></div>`;
+        });
+        cdHTML += '</div></div>';
+        stepsContainer.innerHTML += cdHTML;
+
+        // Mostrar subclaves (texto) una sola vez
+        const subkeysAll = generateSubkeys(keyBinary);
+        let subkeysHTML = '<div class="step-container"><div class="step-title">Subclaves K1..K16</div>';
+        subkeysAll.forEach((subkey, index) => {
+            const blocks6 = [];
+            for (let j = 0; j < subkey.length; j += 6) blocks6.push(subkey.slice(j, j + 6));
+            subkeysHTML += `<p><strong>K${index + 1}:</strong> ${blocks6.join(' - ')}</p>`;
+        });
+        subkeysHTML += '</div>';
+        stepsContainer.innerHTML += subkeysHTML;
+
+    // Función auxiliar que renderiza el proceso completo (similar al modo single) para un bloque dado
+    function renderBlockProcess(blk, blkIndex) {
+            const permutedBlock = initialPermutation(blk);
+            const L0b = permutedBlock.slice(0, 32);
+            const R0b = permutedBlock.slice(32);
+            const expandedR0b = expansionE(R0b);
+
+            const subkeys = subkeysAll; // ya calculadas
+
+            // Crear IDs únicos por bloque para el selector y display
+            const selectorId = `subkeySelect_blk_${blkIndex}`;
+            const displayId = `selectedSubkeyDisplay_blk_${blkIndex}`;
+
+            let html = `<div class="step-container"><div class="step-title">Bloque ${blkIndex + 1} — Proceso detallado</div>`;
+            html += `<p><strong>Bloque (bin):</strong> <span class="mono">${blk}</span> — <strong>hex:</strong> ${binaryToHex(blk)}</p>`;
+            // Mostrar los 8 caracteres resultantes junto al binario
+            html += `<p><strong>Caracteres (8):</strong> <span class="mono">${binary64ToAsciiString(blk)}</span></p>`;
+            // Fila de emojis por byte (uno por cada octeto)
+            html += `<div class="emoji-row" aria-hidden="true">${binary64ToEmojiRow(blk)}</div>`;
+            html += `<p><strong>L0:</strong> ${L0b}</p><p><strong>R0:</strong> ${R0b}</p>`;
+            html += `<div class="step-sub"><h4>Expansión E de R0</h4>${formatAs6x8Matrix(expandedR0b)}</div>`;
+
+            // Selector y contenedor de resultados por bloque
+            html += `<div class="step-container"><div class="step-title">Elección de subclave para Bloque ${blkIndex + 1}</div>`;
+            html += `<div class="subkey-selector">`;
+            html += `<label for="${selectorId}">Selecciona una subclave (1-16):</label>`;
+            html += `<select id="${selectorId}">`;
+            for (let s = 0; s < 16; s++) html += `<option value="${s}">Subclave ${s + 1}</option>`;
+            html += `</select></div><div id="${displayId}"></div></div>`;
+
+            html += '</div>'; // cierre bloque container
+            return { html, selectorId, displayId, expandedR0b, subkeys };
+        }
+        // Añadir proceso detallado por bloque y enlazar selectores
+        function attachBlockSelectorHandler(rendered) {
+            setTimeout(() => {
+                const sel = document.getElementById(rendered.selectorId);
+                const disp = document.getElementById(rendered.displayId);
+                if (!sel || !disp) return;
+
+                sel.addEventListener('change', () => {
+                    const selectedIndex = parseInt(sel.value);
+                    const selectedSubkey = rendered.subkeys[selectedIndex];
+                    const xorResult = xorBinary(rendered.expandedR0b, selectedSubkey);
+                    const sixBitGroups = divideInto6BitGroups(xorResult);
+                    const sBoxResults = applySBoxes(sixBitGroups);
+                    const sBoxOutput = sBoxResults.join('');
+
+                    // Formatear subclave en bloques de 6 separados por ' - '
+                    const subkeyBlocks = [];
+                    for (let i = 0; i < selectedSubkey.length; i += 6) subkeyBlocks.push(selectedSubkey.slice(i, i + 6));
+                    const formattedSubkey = subkeyBlocks.join(' - ');
+
+                    let groupsHtml = '';
+                    for (let g = 0; g < sixBitGroups.length; g++) {
+                        groupsHtml += `<div class="group-item"><strong>Grupo ${g + 1} (S${g + 1}):</strong> ${sixBitGroups[g]}</div>`;
+                    }
+
+                    disp.innerHTML = `
+                        <p><strong>K${selectedIndex + 1}:</strong> ${formattedSubkey}</p>
+                        <div class="step-container">
+                            <div class="step-title">XOR (R0 expandido ⊕ Subclave)</div>
+                            <p><strong>R0 Expandido (48 bits):</strong></p>
+                            <div class="binary-output">${rendered.expandedR0b}</div>
+                            <p><strong>Subclave K${selectedIndex + 1} (48 bits):</strong></p>
+                            <div class="binary-output">${selectedSubkey}</div>
+                            <p><strong>Resultado XOR (48 bits):</strong></p>
+                            <div class="binary-output">${xorResult}</div>
+                        </div>
+                        <div class="step-container">
+                            <div class="step-title">Division en 8 grupos de 6 bits</div>
+                            <div class="groups-display">${groupsHtml}</div>
+                        </div>
+                        <div class="step-container">
+                            <div class="step-title">Aplicación de S-boxes</div>
+                            ${showSBoxApplication(sixBitGroups, sBoxResults)}
+                            <p><strong>Resultado combinado (32 bits):</strong></p>
+                            <div class="binary-output">${sBoxOutput}</div>
+                            <p><strong>8 Caracteres ASCII resultantes:</strong></p>
+                            <div class="ascii-output">${sBoxResultsToAscii(sBoxResults)}</div>
+                        </div>
+                    `;
+                });
+
+                // disparar cambio por defecto para mostrar K1
+                sel.value = '0';
+                sel.dispatchEvent(new Event('change'));
+            }, 50);
+        }
+
+        // Renderizar todos los paneles de bloques en una grilla para verlos simultáneamente
+        let gridHtml = '<div class="blocks-grid">';
+        const renderedBlocks = [];
+        blocks64.forEach((blk, idx) => {
+            const rendered = renderBlockProcess(blk, idx);
+            renderedBlocks.push(rendered);
+            gridHtml += `<div class="block-panel" id="block_panel_${idx}">${rendered.html}</div>`;
+        });
+        gridHtml += '</div>';
+        stepsContainer.innerHTML += gridHtml;
+        // Enlazar selectores tras montar los paneles
+        renderedBlocks.forEach(r => attachBlockSelectorHandler(r));
+
+        // Cifrar en CBC y mostrar resumen final (IV + bloques cifrados)
+        const result = cbcEncryptBlocks(blocks64, keyBinary);
+        let outHtml = '<div class="step-container"><div class="step-title">Resultado CBC (resumen)</div>';
+        outHtml += `<p><strong>IV (hex):</strong> ${result.ivHex}</p>`;
+        // Mostrar IV también como 8 caracteres especiales
+        outHtml += `<p><strong>IV (ASCII especial):</strong> <span class="mono">${binary64ToAsciiString(result.ivBin)}</span></p>`;
+        outHtml += '<ol>';
+        result.cipherHexBlocks.forEach((ch, i) => {
+            const bin = result.cipherBinBlocks[i];
+            const ascii = binary64ToAsciiString(bin);
+            outHtml += `<li>Bloque ${i + 1}: <strong>hex:</strong> ${ch} — <strong>ASCII especial:</strong> <span class="mono">${ascii}</span></li>`;
+        });
+        outHtml += '</ol></div>';
+        stepsContainer.innerHTML += outHtml;
+
+        document.getElementById('encryptedOutput').innerText = `CBC: ${result.cipherHexBlocks.length} bloques cifrados; IV=${result.ivHex} — ASCII ejemplo: ${binary64ToAsciiString(result.cipherBinBlocks[0] || result.ivBin)}`;
+        return;
+    }
+
+    // Si el modo es ECB (multi-bloques sin encadenamiento)
+    if (mode === 'ecb') {
+        if (!key || key.length !== 8) {
+            alert('Para modo ECB la clave debe tener 8 caracteres.');
+            return;
+        }
+
+        // Dividir con PKCS#7
+        const blocks64 = divideIntoBlocksPKCS7(text);
+        const keyBinary = textToBinary(key);
+
+        // Mostrar resumen de bloques de entrada
+        let html = `<div class="step-container"><div class="step-title">Modo: PKCS#7 + ECB — Bloques a cifrar (${blocks64.length})</div>`;
+        blocks64.forEach((blk, idx) => {
+            html += `<p><strong>Bloque ${idx + 1} (bin):</strong> <span class="mono">${blk}</span> — <strong>hex:</strong> ${binaryToHex(blk)}</p>`;
+        });
+        html += '</div>';
+        stepsContainer.innerHTML += html;
+
+        // Mostrar visualización de clave una sola vez
+        stepsContainer.innerHTML += `
+            <div class="step-container">
+                <div class="step-title">Clave y Agenda (PC1, C0/D0, Rotaciones, Subclaves)</div>
+                ${visualizePC1(keyBinary)}
+            </div>
+        `;
+
+        const roundDetailsAll = getRoundDetails(keyBinary);
+        const onlyRoundsAll = roundDetailsAll.filter(d => d.round > 0);
+        let cdHTML = '<div class="step-container"><div class="step-title">Rotaciones (C1..C16 y D1..D16)</div>';
+        cdHTML += '<div class="cd-grid">';
+        onlyRoundsAll.forEach(d => {
+            cdHTML += `<div class="cd-item"><p class="cd-line"><strong>C${d.round}:</strong> ${formatAs7BlocksLine(d.C)}</p><p class="cd-line"><strong>D${d.round}:</strong> ${formatAs7BlocksLine(d.D)}</p></div>`;
+        });
+        cdHTML += '</div></div>';
+        stepsContainer.innerHTML += cdHTML;
+
+        // Mostrar subclaves (texto)
+        const subkeysAll = generateSubkeys(keyBinary);
+        let subkeysHTML = '<div class="step-container"><div class="step-title">Subclaves K1..K16</div>';
+        subkeysAll.forEach((subkey, index) => {
+            const blocks6 = [];
+            for (let j = 0; j < subkey.length; j += 6) blocks6.push(subkey.slice(j, j + 6));
+            subkeysHTML += `<p><strong>K${index + 1}:</strong> ${blocks6.join(' - ')}</p>`;
+        });
+        subkeysHTML += '</div>';
+        stepsContainer.innerHTML += subkeysHTML;
+
+        // Renderizar grilla para ECB con detalle por bloque (binario, caracteres, emojis, y selector de subclave)
+        let gridHtmlECB = '<div class="blocks-grid">';
+        const renderedBlocksECB = [];
+        blocks64.forEach((blk, idx) => {
+            const permutedBlock = initialPermutation(blk);
+            const L0b = permutedBlock.slice(0, 32);
+            const R0b = permutedBlock.slice(32);
+            const expandedR0b = expansionE(R0b);
+
+            const selectorId = `subkeySelect_ecb_${idx}`;
+            const displayId = `selectedSubkeyDisplay_ecb_${idx}`;
+
+            // calcular cipher real para este bloque
+            const cipherBin = desBlockEncrypt(blk, keyBinary);
+            const cipherHex = binaryToHex(cipherBin);
+            const cipherChars = binary64ToAsciiString(cipherBin);
+            const cipherEmojiRow = binary64ToEmojiRow(cipherBin);
+
+            let html = `<div class="step-container"><div class="step-title">Bloque ${idx + 1} — Proceso detallado (ECB)</div>`;
+            html += `<p><strong>Bloque (bin):</strong> <span class="mono">${blk}</span> — <strong>hex:</strong> ${binaryToHex(blk)}</p>`;
+            html += `<p><strong>Caracteres (8):</strong> <span class="mono">${binary64ToAsciiString(blk)}</span></p>`;
+            html += `<div class="emoji-row" aria-hidden="true">${binary64ToEmojiRow(blk)}</div>`;
+            html += `<p><strong>L0:</strong> ${L0b}</p><p><strong>R0:</strong> ${R0b}</p>`;
+            html += `<div class="step-sub"><h4>Expansión E de R0</h4>${formatAs6x8Matrix(expandedR0b)}</div>`;
+
+            // Selector y contenedor de resultados por bloque
+            html += `<div class="step-container"><div class="step-title">Elección de subclave para Bloque ${idx + 1}</div>`;
+            html += `<div class="subkey-selector">`;
+            html += `<label for="${selectorId}">Selecciona una subclave (1-16):</label>`;
+            html += `<select id="${selectorId}">`;
+            for (let s = 0; s < 16; s++) html += `<option value="${s}">Subclave ${s + 1}</option>`;
+            html += `</select></div><div id="${displayId}"></div></div>`;
+
+            // Mostrar resultado final del cifrado del bloque
+            html += `<div class="step-container"><h4>Resultado final (ECB)</h4>`;
+            html += `<p><strong>Cipher (hex):</strong> ${cipherHex}</p>`;
+            html += `<p><strong>Cipher (ASCII especial):</strong> <span class="mono">${cipherChars}</span></p>`;
+            html += `<div class="emoji-row" aria-hidden="true">${cipherEmojiRow}</div>`;
+            html += `</div>`;
+
+            html += '</div>'; // cierre bloque container
+
+            renderedBlocksECB.push({ html, selectorId, displayId, expandedR0b, subkeys: subkeysAll });
+            gridHtmlECB += `<div class="block-panel" id="block_panel_ecb_${idx}">${html}</div>`;
+        });
+        gridHtmlECB += '</div>';
+        stepsContainer.innerHTML += gridHtmlECB;
+
+        // Handler local para mostrar XOR y S-box al seleccionar subclave (igual que CBC)
+        function attachECBHandler(rendered) {
+            setTimeout(() => {
+                const sel = document.getElementById(rendered.selectorId);
+                const disp = document.getElementById(rendered.displayId);
+                if (!sel || !disp) return;
+
+                sel.addEventListener('change', () => {
+                    const selectedIndex = parseInt(sel.value);
+                    const selectedSubkey = rendered.subkeys[selectedIndex];
+                    const xorResult = xorBinary(rendered.expandedR0b, selectedSubkey);
+                    const sixBitGroups = divideInto6BitGroups(xorResult);
+                    const sBoxResults = applySBoxes(sixBitGroups);
+                    const sBoxOutput = sBoxResults.join('');
+
+                    // Formatear subclave en bloques de 6 separados por ' - '
+                    const subkeyBlocks = [];
+                    for (let i = 0; i < selectedSubkey.length; i += 6) subkeyBlocks.push(selectedSubkey.slice(i, i + 6));
+                    const formattedSubkey = subkeyBlocks.join(' - ');
+
+                    let groupsHtml = '';
+                    for (let g = 0; g < sixBitGroups.length; g++) {
+                        groupsHtml += `<div class="group-item"><strong>Grupo ${g + 1} (S${g + 1}):</strong> ${sixBitGroups[g]}</div>`;
+                    }
+
+                    disp.innerHTML = `
+                        <p><strong>K${selectedIndex + 1}:</strong> ${formattedSubkey}</p>
+                        <div class="step-container">
+                            <div class="step-title">XOR (R0 expandido ⊕ Subclave)</div>
+                            <p><strong>R0 Expandido (48 bits):</strong></p>
+                            <div class="binary-output">${rendered.expandedR0b}</div>
+                            <p><strong>Subclave K${selectedIndex + 1} (48 bits):</strong></p>
+                            <div class="binary-output">${selectedSubkey}</div>
+                            <p><strong>Resultado XOR (48 bits):</strong></p>
+                            <div class="binary-output">${xorResult}</div>
+                        </div>
+                        <div class="step-container">
+                            <div class="step-title">Division en 8 grupos de 6 bits</div>
+                            <div class="groups-display">${groupsHtml}</div>
+                        </div>
+                        <div class="step-container">
+                            <div class="step-title">Aplicación de S-boxes</div>
+                            ${showSBoxApplication(sixBitGroups, sBoxResults)}
+                            <p><strong>Resultado combinado (32 bits):</strong></p>
+                            <div class="binary-output">${sBoxOutput}</div>
+                            <p><strong>8 Caracteres ASCII resultantes:</strong></p>
+                            <div class="ascii-output">${sBoxResultsToAscii(sBoxResults)}</div>
+                        </div>
+                    `;
+                });
+
+                // disparar cambio por defecto para mostrar K1
+                sel.value = '0';
+                sel.dispatchEvent(new Event('change'));
+            }, 50);
+        }
+
+        renderedBlocksECB.forEach(r => attachECBHandler(r));
+
+        // Cifrar en ECB
+        const result = ecbEncryptBlocks(blocks64, keyBinary);
+        let outHtml = '<div class="step-container"><div class="step-title">Resultado ECB (resumen)</div>';
+        outHtml += '<ol>';
+        result.cipherHexBlocks.forEach((ch, i) => {
+            const bin = result.cipherBinBlocks[i];
+            const ascii = binary64ToAsciiString(bin);
+            const emojiRow = binary64ToEmojiRow(bin);
+            outHtml += `
+                <li>
+                    <div><strong>Bloque ${i + 1} (bin):</strong> <span class="mono">${bin}</span></div>
+                    <div class="emoji-row" aria-hidden="true">${emojiRow}</div>
+                    <div><strong>hex:</strong> ${ch} — <strong>ASCII especial:</strong> <span class="mono">${ascii}</span></div>
+                </li>`;
+        });
+        outHtml += '</ol></div>';
+        stepsContainer.innerHTML += outHtml;
+
+        // También mostrar el resumen ECB en el panel 'Resultado Final' del HTML
+        const outSummaryContainer = document.getElementById('encryptedOutput');
+        if (outSummaryContainer) {
+            outSummaryContainer.innerHTML = outHtml;
+        } else {
+            document.getElementById('encryptedOutput').innerText = `ECB: ${result.cipherHexBlocks.length} bloques cifrados`;
+        }
+        return;
+    }
+
+    // Modo 'single' (comportamiento original — mostrar detalle paso a paso del primer bloque)
     // Paso 1: Mensaje en binario
     const binaryText = textToBinary(text);
     const blocks = divideIntoBlocks(binaryText);
@@ -515,17 +1061,11 @@ function desEncryptionProcess(text, key) {
     // Mostrar C1..C16 y D1..D16 (en bloques de 7) antes de la generación de subclaves (debe verse antes del Paso 4)
     const roundDetails = getRoundDetails(binaryKey);
     const onlyRounds = roundDetails.filter(d => d.round > 0); // excluir C0/D0
-    // Formatear los 28 bits como una línea con guiones entre bloques de 7, y mostrar Cn y Dn en líneas separadas dentro de una caja
-    const fmt7Inline = bits => {
-        const parts = [];
-        for (let i = 0; i < bits.length; i += 7) parts.push(bits.slice(i, i + 7));
-        return parts.join(' - ');
-    };
 
     let cdHTML = '<div class="step-container"><div class="step-title">Paso 3 Clave: Rotaciones (C1..C16 y D1..D16)</div>';
     cdHTML += '<div class="cd-grid">';
     onlyRounds.forEach(d => {
-        cdHTML += `<div class="cd-item"><p class="cd-line"><strong>C${d.round}:</strong> ${fmt7Inline(d.C)}</p><p class="cd-line"><strong>D${d.round}:</strong> ${fmt7Inline(d.D)}</p></div>`;
+        cdHTML += `<div class="cd-item"><p class="cd-line"><strong>C${d.round}:</strong> ${formatAs7BlocksLine(d.C)}</p><p class="cd-line"><strong>D${d.round}:</strong> ${formatAs7BlocksLine(d.D)}</p></div>`;
     });
     cdHTML += '</div></div>';
     stepsContainer.innerHTML += cdHTML;

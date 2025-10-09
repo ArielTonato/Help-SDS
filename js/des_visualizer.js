@@ -42,19 +42,111 @@ function pc1Permutation(key) {
         console.log('Adjusted key:', key, 'Length:', key.length);
     }
     
-    const pc1Order = [
-        57, 49, 41, 33, 25, 17, 9,
-        1, 58, 50, 42, 34, 26, 18,
-        10, 2, 59, 51, 43, 35, 27,
-        19, 11, 3, 60, 52, 44, 36,
-        63, 55, 47, 39, 31, 23, 15,
-        7, 62, 54, 46, 38, 30, 22,
-        14, 6, 61, 53, 45, 37, 29,
-        21, 13, 5, 28, 20, 12, 4
-    ];
-    const result = pc1Order.map(pos => key[pos - 1]).join('');
+    const result = PC1_ORDER.map(pos => key[pos - 1]).join('');
     console.log('PC1 output:', result, 'Length:', result.length); // Debug
     return result;
+}
+
+// Tabla PC-1 (constante global para visualización y uso)
+const PC1_ORDER = [
+    57, 49, 41, 33, 25, 17, 9,
+    1, 58, 50, 42, 34, 26, 18,
+    10, 2, 59, 51, 43, 35, 27,
+    19, 11, 3, 60, 52, 44, 36,
+    63, 55, 47, 39, 31, 23, 15,
+    7, 62, 54, 46, 38, 30, 22,
+    14, 6, 61, 53, 45, 37, 29,
+    21, 13, 5, 28, 20, 12, 4
+];
+
+// Horarios de desplazamiento por ronda (1..16)
+const SHIFTS = [1, 1, 2, 2, 2, 2, 2, 2, 1, 2, 2, 2, 2, 2, 2, 1];
+
+// Calcula los valores Cn, Dn y K_n para cada ronda a partir de la clave (binary 64)
+function getRoundDetails(key64) {
+    const pc1 = pc1Permutation(key64); // 56 bits
+    let C = pc1.slice(0, 28);
+    let D = pc1.slice(28);
+    const rounds = [];
+
+    // C0/D0 primero
+    rounds.push({ round: 0, shift: 0, C: C, D: D, K: null });
+
+    for (let i = 0; i < 16; i++) {
+        C = leftShift(C, SHIFTS[i]);
+        D = leftShift(D, SHIFTS[i]);
+        const combined = C + D;
+        const Kn = pc2Permutation(combined);
+        rounds.push({ round: i + 1, shift: SHIFTS[i], C: C, D: D, K: Kn });
+    }
+    return rounds;
+}
+
+// Visualizador de PC1: muestra la matriz original 8x8 con índices y la matriz PC1 8x7
+function visualizePC1(binaryKey) {
+    // Asegurar 64 bits
+    const key64 = (binaryKey || '').padEnd(64, '0').slice(0, 64);
+
+    // Matriz original 8x8 con números de posición — versión mejorada
+    let originalHTML = '<div class="pc1-visual"><h4>Matriz original de clave (8×8) y posiciones</h4>';
+    // Cabecera con índices de columna
+    originalHTML += '<table class="pc1-original">';
+    originalHTML += '<thead><tr><th></th>';
+    for (let c = 0; c < 8; c++) {
+        originalHTML += `<th class="col-header">Col ${c + 1}</th>`;
+    }
+    originalHTML += '</tr></thead><tbody>';
+
+    for (let r = 0; r < 8; r++) {
+        originalHTML += `<tr><th class="row-header">Fila ${r + 1}</th>`;
+        for (let c = 0; c < 8; c++) {
+            const pos = r * 8 + c + 1; // 1-indexed
+            const bit = key64[pos - 1];
+            const pc1Index = PC1_ORDER.indexOf(pos);
+            const isSelected = pc1Index >= 0;
+            const cellClass = isSelected ? 'pc1-selected' : 'pc1-parity';
+            const badge = isSelected ? `<span class="pc1-badge">${pc1Index + 1}</span>` : `<span class="parity-label">P</span>`;
+
+            originalHTML += `
+                <td class="${cellClass}">
+                    <div class="cell-top">
+                        ${badge}
+                        <span class="pos-num">${pos}</span>
+                    </div>
+                    <div class="bit-val">${bit}</div>
+                </td>`;
+        }
+        originalHTML += '</tr>';
+    }
+    originalHTML += '</tbody></table></div>';
+
+    // Resultado PC1 en 8x7
+    const pc1Result = pc1Permutation(key64);
+    const pc1MatrixHTML = '<div class="pc1-result"><h4>Resultado PC1 (8×7)</h4>' + formatAs7x8Matrix(pc1Result) + '</div>';
+
+    // Calcular C0 y D0 (28 bits cada uno) y formatearlos en bloques de 7 bits
+    const C0 = pc1Result.slice(0, 28);
+    const D0 = pc1Result.slice(28);
+    function formatAs7Blocks(bits28) {
+        const parts = [];
+        for (let i = 0; i < 28; i += 7) {
+            parts.push(bits28.slice(i, i + 7));
+        }
+        return parts.join(' - ');
+    }
+    const C0Formatted = formatAs7Blocks(C0);
+    const D0Formatted = formatAs7Blocks(D0);
+    const cdHTML = `
+        <div class="pc1-cd">
+            <h4>C0 y D0 (28 bits cada uno)</h4>
+            <p><strong>C0:</strong> ${C0Formatted}</p>
+            <p><strong>D0:</strong> ${D0Formatted}</p>
+        </div>`;
+
+    // Explicación breve
+    const legend = '<div class="pc1-legend"><p><small>La etiqueta junto a cada bit en la matriz original indica el orden en que PC-1 toma ese bit (1..56). Los bits sin etiqueta son bits de paridad descartados.</small></p></div>';
+
+    return originalHTML + pc1MatrixHTML + cdHTML + legend;
 }
 
 // Función de expansión E
@@ -70,6 +162,21 @@ function expansionE(block) {
         28, 29, 30, 31, 32, 1
     ];
     return eOrder.map(pos => block[pos - 1]).join('');
+}
+
+// Permutación PC2 para generar subclaves de 48 bits
+function pc2Permutation(key56) {
+    const pc2Order = [
+        14, 17, 11, 24, 1, 5,
+        3, 28, 15, 6, 21, 10,
+        23, 19, 12, 4, 26, 8,
+        16, 7, 27, 20, 13, 2,
+        41, 52, 31, 37, 47, 55,
+        30, 40, 51, 45, 33, 48,
+        44, 49, 39, 56, 34, 53,
+        46, 42, 50, 36, 29, 32
+    ];
+    return pc2Order.map(pos => key56[pos - 1]).join('');
 }
 
 // Generar las 16 subclaves
@@ -95,7 +202,9 @@ function generateSubkeys(key) {
     for (let i = 0; i < 16; i++) {
         currentLeft = leftShift(currentLeft, shifts[i]);
         currentRight = leftShift(currentRight, shifts[i]);
-        subkeys.push(currentLeft + currentRight);
+        const combined = currentLeft + currentRight;
+        const subkey48 = pc2Permutation(combined); // Aplicar PC2 para obtener 48 bits
+        subkeys.push(subkey48);
     }
     
     console.log('Generated subkeys:', subkeys.length); // Debug
@@ -192,8 +301,7 @@ function divideInto6BitGroups(binaryData) {
 // Función para convertir cada resultado de S-box a ASCII
 function sBoxResultsToAscii(sBoxResults) {
     let asciiChars = '';
-    for (let i = 0; i < sBoxResults.length; i++) {
-        const fourBits = sBoxResults[i];
+    for (const fourBits of sBoxResults) {
         // Convertir 4 bits a 8 bits agregando padding
         const eightBits = fourBits.padStart(8, '0');
         const charCode = parseInt(eightBits, 2);
@@ -306,13 +414,13 @@ function formatAs8x8Matrix(binaryData) {
     return matrixHTML;
 }
 
-// Función para mostrar datos como matriz 6x8 (para expansión E)
+// Función para mostrar datos como matriz 8x6 (para expansión E - 48 bits: 8 filas × 6 columnas)
 function formatAs6x8Matrix(binaryData) {
     let matrixHTML = '<div class="matrix-container"><table class="binary-matrix">';
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 8; i++) {
         matrixHTML += '<tr>';
-        for (let j = 0; j < 8; j++) {
-            const index = i * 8 + j;
+        for (let j = 0; j < 6; j++) {
+            const index = i * 6 + j;
             matrixHTML += `<td>${binaryData[index] || '0'}</td>`;
         }
         matrixHTML += '</tr>';
@@ -321,13 +429,13 @@ function formatAs6x8Matrix(binaryData) {
     return matrixHTML;
 }
 
-// Función para mostrar datos como matriz 7x8 (para PC1 - 56 bits)
+// Función para mostrar datos como matriz 8x7 (para PC1 - 56 bits: 8 filas × 7 columnas)
 function formatAs7x8Matrix(binaryData) {
     let matrixHTML = '<div class="matrix-container"><table class="binary-matrix">';
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 8; i++) {
         matrixHTML += '<tr>';
-        for (let j = 0; j < 8; j++) {
-            const index = i * 8 + j;
+        for (let j = 0; j < 7; j++) {
+            const index = i * 7 + j;
             matrixHTML += `<td>${binaryData[index] || '0'}</td>`;
         }
         matrixHTML += '</tr>';
@@ -396,28 +504,53 @@ function desEncryptionProcess(text, key) {
         </div>
     `;
 
-    // Paso 2 Clave: Matriz PC1
-    const pc1Key = pc1Permutation(binaryKey);
+    // Paso 2 Clave: Matriz PC1 (visualización detallada)
     stepsContainer.innerHTML += `
         <div class="step-container">
             <div class="step-title">Paso 2 Clave: Matriz PC1</div>
-            ${formatAs7x8Matrix(pc1Key)}
+            ${visualizePC1(binaryKey)}
         </div>
     `;
+
+    // Mostrar C1..C16 y D1..D16 (en bloques de 7) antes de la generación de subclaves (debe verse antes del Paso 4)
+    const roundDetails = getRoundDetails(binaryKey);
+    const onlyRounds = roundDetails.filter(d => d.round > 0); // excluir C0/D0
+    // Formatear los 28 bits como una línea con guiones entre bloques de 7, y mostrar Cn y Dn en líneas separadas dentro de una caja
+    const fmt7Inline = bits => {
+        const parts = [];
+        for (let i = 0; i < bits.length; i += 7) parts.push(bits.slice(i, i + 7));
+        return parts.join(' - ');
+    };
+
+    let cdHTML = '<div class="step-container"><div class="step-title">Paso 3 Clave: Rotaciones (C1..C16 y D1..D16)</div>';
+    cdHTML += '<div class="cd-grid">';
+    onlyRounds.forEach(d => {
+        cdHTML += `<div class="cd-item"><p class="cd-line"><strong>C${d.round}:</strong> ${fmt7Inline(d.C)}</p><p class="cd-line"><strong>D${d.round}:</strong> ${fmt7Inline(d.D)}</p></div>`;
+    });
+    cdHTML += '</div></div>';
+    stepsContainer.innerHTML += cdHTML;
 
     // Paso 4: Generación de las 16 subclaves
     const subkeys = generateSubkeys(binaryKey);
     console.log('Subkeys generated:', subkeys); // Debug
-    let subkeysHTML = '<div class="step-container"><div class="step-title">Paso 4: Generación de las 16 subclaves</div>';
+    let subkeysHTML = '<div class="step-container"><div class="step-title">Paso 4: Generación de las 16 subclaves (48 bits cada una)</div>';
     if (subkeys && subkeys.length > 0) {
         subkeys.forEach((subkey, index) => {
-            subkeysHTML += `<p><strong>K${index + 1}:</strong> ${subkey}</p>`;
+            // Dividir la subclave en bloques de 6 bits (48 bits total = 8 bloques de 6)
+            const blocks = [];
+            for (let i = 0; i < subkey.length; i += 6) {
+                blocks.push(subkey.slice(i, i + 6));
+            }
+            const formattedSubkey = blocks.join(' - ');
+            subkeysHTML += `<p><strong>K${index + 1}:</strong> ${formattedSubkey}</p>`;
         });
     } else {
         subkeysHTML += '<p>Error generando subclaves</p>';
     }
     subkeysHTML += '</div>';
     stepsContainer.innerHTML += subkeysHTML;
+
+    // (La visualización de C1..C16 y D1..D16 ya fue insertada anteriormente justo después de PC1)
 
     // Paso 5: Selección de subclave
     stepsContainer.innerHTML += `
@@ -459,9 +592,15 @@ function desEncryptionProcess(text, key) {
             const sBoxResults = applySBoxes(sixBitGroups);
             const sBoxOutput = sBoxResults.join('');
             
+            // Formatear subclave en bloques de 6 separados por ' - '
+            const subkeyBlocks = [];
+            for (let i = 0; i < selectedSubkey.length; i += 6) {
+                subkeyBlocks.push(selectedSubkey.slice(i, i + 6));
+            }
+            const formattedSubkey = subkeyBlocks.join(' - ');
+
             display.innerHTML = `
-                <p><strong>Subclave ${selectedIndex + 1} seleccionada:</strong></p>
-                <div class="binary-output">${selectedSubkey}</div>
+                <p><strong>K${selectedIndex + 1}:</strong> ${formattedSubkey}</p>
                 <p><strong>Equivalencia:</strong> K${selectedIndex + 1}</p>
                 
                 <div class="step-container">
